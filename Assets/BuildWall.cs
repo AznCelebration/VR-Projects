@@ -16,6 +16,17 @@ public class BuildWall : MonoBehaviour {
 		
 	}
 
+    void Rebuild()
+    {
+        var bricks = GameObject.FindGameObjectsWithTag("Brick");
+        foreach (GameObject clone in bricks)
+        {
+            Destroy(clone);
+        }
+        StartCoroutine(BrickStack());
+
+    }
+
     IEnumerator BrickStack() {
         
         int numberOfObjects = 54;
@@ -38,7 +49,7 @@ public class BuildWall : MonoBehaviour {
                 Instantiate(brick, pos, Quaternion.LookRotation(origin));
             } 
         }
-        yield return new WaitForSeconds(5f);
+        yield return new WaitForSeconds(6f);
         var bricks = GameObject.FindGameObjectsWithTag("Brick");
         foreach (GameObject clone in bricks) {
             clone.GetComponent<Rigidbody>().constraints = 0;

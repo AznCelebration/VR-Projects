@@ -4,16 +4,18 @@ using UnityEngine;
 
 public class LookControl : MonoBehaviour {
     public Transform cam;
+    public GameObject cannonballPrefab;
+    private GameObject prev = null;
     private int gazeDuration = 0;
+
     // Use this for initialization
     void Start () {
-        Debug.DrawRay(cam.position, cam.forward, Color.red, 10.0f);
+
     }
 	
 	// Update is called once per frame
 	void Update () {
-        GameObject prev = null;
-        
+        GameObject cannonball;
         Ray look = new Ray(cam.position, cam.forward);
         RaycastHit hit;
         if (Physics.Raycast(look, out hit, Mathf.Infinity)) {
@@ -28,10 +30,21 @@ public class LookControl : MonoBehaviour {
                 prev = currLook;
                 gazeDuration = 0;
             }
-            if (currLook.tag == "Brick" && gazeDuration == 10) {
-                Destroy(currLook);
-                gazeDuration = 0;
+            if (gazeDuration == 100) {
+                if (currLook.tag == "Brick")
+                {
+                    //Destroy(currLook);
+                    cannonball = Instantiate(cannonballPrefab, cam.position, Quaternion.identity);
+                    cannonball.GetComponent<Rigidbody>().velocity = cam.forward.normalized * 50;
+                    gazeDuration = 0;
+                }
+
+                else if(currLook.name == "BuildWallControl") {
+                    currLook.SendMessage("Rebuild");
+                }
             }
+            
+
         }
 	}
 }
