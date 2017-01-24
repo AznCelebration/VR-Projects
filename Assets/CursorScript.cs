@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine.UI;
 using UnityEngine;
 
-public class Cursor : MonoBehaviour {
+public class CursorScript : MonoBehaviour {
     public Transform Reticle;
     public Transform parentCam;
     public Image Loading;

@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class LookControl : MonoBehaviour {
+public class LookScript : MonoBehaviour {
     public Transform cam;
-    public GameObject cannonballPrefab;
+    public GameObject shootController;
     private GameObject prev = null;
     private int gazeDuration = 0;
 
@@ -15,7 +15,6 @@ public class LookControl : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
-        GameObject cannonball;
         Ray look = new Ray(cam.position, cam.forward);
         RaycastHit hit;
         if (Physics.Raycast(look, out hit, Mathf.Infinity)) {
@@ -28,7 +27,7 @@ public class LookControl : MonoBehaviour {
                     if (!(currLook.name == "BuildWallControl")) {
                         gazeDuration++;
                     }
-                    else if (!currLook.GetComponent<BuildWall>().stacking) {
+                    else if (!currLook.GetComponent<BuildWallScript>().stacking) {
                         gazeDuration++;
                     }
                 }
@@ -38,12 +37,11 @@ public class LookControl : MonoBehaviour {
                 }
                 if (gazeDuration == 100) {
                     if (currLook.name == "Brick(Clone)") {
-                        cannonball = Instantiate(cannonballPrefab, cam.position, Quaternion.identity);
-                        cannonball.GetComponent<Rigidbody>().velocity = cam.forward.normalized * 50;
+                        shootController.SendMessage("Shoot", currLook);
                     }
 
                     else if (currLook.name == "BuildWallControl") {
-                        if (!currLook.GetComponent<BuildWall>().stacking) {
+                        if (!currLook.GetComponent<BuildWallScript>().stacking) {
                             currLook.SendMessage("Rebuild");
                         }
                     }

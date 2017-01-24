@@ -1,11 +1,10 @@
 fileFormatVersion: 2
-guid: d7c940798a2efc2488a6be556ddf0d13
-timeCreated: 1484871678
+guid: e65986be78d749c4b82549f5528ce71a
+timeCreated: 1485241435
 licenseType: Free
 MonoImporter:
   serializedVersion: 2
-  defaultReferences:
-  - brick: {fileID: 1173949751648848, guid: 95514da046d678d40a1a2e7f78eacdb1, type: 2}
+  defaultReferences: []
   executionOrder: 0
   icon: {instanceID: 0}
   userData: 
