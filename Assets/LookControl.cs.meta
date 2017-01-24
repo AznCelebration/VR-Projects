@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 7dbd7691b1c34a041a9a84ca99567cc3
+timeCreated: 1484887645
+licenseType: Free
+MonoImporter:
+  serializedVersion: 2
+  defaultReferences:
+  - cam: {instanceID: 0}
+  - cannonballPrefab: {fileID: 1470075401004254, guid: 60f6bf4de70bcdc49b2f129fc4b5696e,
+      type: 2}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
