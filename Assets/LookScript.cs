@@ -55,6 +55,12 @@ public class LookScript : MonoBehaviour {
                                 currLook.transform.parent.SendMessage("Close");
                             }
                             break;
+                        case "LeftArrow":
+                            shootController.SendMessage("Left");
+                            break;
+                        case "RightArrow":
+                            shootController.SendMessage("Right");
+                            break;
                         default: break;
                     }
                     

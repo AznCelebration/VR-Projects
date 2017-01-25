@@ -7,7 +7,7 @@ public class ShootingScript : MonoBehaviour {
     public GameObject cannonballPrefab;
     public Transform cam;
     public GameObject laser;
-    private string mode = "laser";
+    private string mode = "none";
 
     // Use this for initialization
     void Start () {
@@ -28,6 +28,36 @@ public class ShootingScript : MonoBehaviour {
         else if (mode == "laser") {
             Destroy(currLook);
             laser.GetComponent<LaserScript>().SendMessage("drawLaser", currLook);
+        }
+    }
+
+    void Left() {
+        switch (mode) {
+            case "none":
+                mode = "laser";
+                break;
+            case "laser":
+                mode = "cannon";
+                break;
+            case "cannon":
+                mode = "none";
+                break;
+            default: break;
+        }
+    }
+
+    void Right() {
+        switch (mode) {
+            case "none":
+                mode = "cannon";
+                break;
+            case "laser":
+                mode = "none";
+                break;
+            case "cannon":
+                mode = "laser";
+                break;
+            default: break;
         }
     }
 }
