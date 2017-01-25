@@ -36,21 +36,28 @@ public class LookScript : MonoBehaviour {
                     gazeDuration = 0;
                 }
                 if (gazeDuration == 100) {
-                    if (currLook.name == "Brick(Clone)") {
-                        shootController.SendMessage("Shoot", currLook);
+                    switch (currLook.name) {
+                        case "Brick(Clone)":
+                            shootController.SendMessage("Shoot", currLook);
+                            break;
+                        case "BuildWallControl":
+                            if (!currLook.GetComponent<BuildWallScript>().stacking) {
+                                currLook.SendMessage("Rebuild");
+                            }
+                            break;
+                        case "MenuUI":
+                            if (!currLook.transform.parent.GetComponent<MenuScript>().On) {
+                                currLook.transform.parent.SendMessage("Open");
+                            }
+                            break;
+                        case "Close":
+                            if (currLook.transform.parent.GetComponent<MenuScript>().On) {
+                                currLook.transform.parent.SendMessage("Close");
+                            }
+                            break;
+                        default: break;
                     }
-
-                    else if (currLook.name == "BuildWallControl") {
-                        if (!currLook.GetComponent<BuildWallScript>().stacking) {
-                            currLook.SendMessage("Rebuild");
-                        }
-                    }
-                    else if (currLook.name == "MenuUI") {
-                        if (!currLook.GetComponent<MenuScript>().On) {
-                            currLook.SendMessage("Open");
-                        }
-                        
-                    }
+                    
                     gazeDuration = 0;
                 }
                 
