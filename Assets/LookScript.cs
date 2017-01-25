@@ -46,12 +46,12 @@ public class LookScript : MonoBehaviour {
                             }
                             break;
                         case "MenuUI":
-                            if (!currLook.transform.parent.GetComponent<MenuScript>().On) {
+                            if (!currLook.transform.parent.GetComponent<MenuShootScript>().On) {
                                 currLook.transform.parent.SendMessage("Open");
                             }
                             break;
                         case "Close":
-                            if (currLook.transform.parent.GetComponent<MenuScript>().On) {
+                            if (currLook.transform.parent.GetComponent<MenuShootScript>().On) {
                                 currLook.transform.parent.SendMessage("Close");
                             }
                             break;
