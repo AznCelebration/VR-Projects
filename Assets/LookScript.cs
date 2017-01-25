@@ -45,6 +45,12 @@ public class LookScript : MonoBehaviour {
                             currLook.SendMessage("Rebuild");
                         }
                     }
+                    else if (currLook.name == "MenuUI") {
+                        if (!currLook.GetComponent<MenuScript>().On) {
+                            currLook.SendMessage("Open");
+                        }
+                        
+                    }
                     gazeDuration = 0;
                 }
                 

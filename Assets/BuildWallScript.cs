@@ -53,12 +53,13 @@ public class BuildWallScript : MonoBehaviour {
                     angle += 0.15f;
                 }
                 Vector3 pos = new Vector3(Mathf.Cos(angle), 3, Mathf.Sin(angle)) * radius;
-                Vector3 origin = new Vector3(-pos.x, 3, -pos.z);
+                Vector3 origin = new Vector3(-pos.x, pos.y, -pos.z);
                 brickclone = Instantiate(brick, pos, Quaternion.LookRotation(origin));
+                brickclone.transform.rotation = Quaternion.Euler(0, brickclone.transform.eulerAngles.y, 0);
                 brickList.Add(brickclone);
             } 
         }
-        yield return new WaitForSeconds(6f);
+        yield return new WaitForSeconds(4f);
         foreach (GameObject clone in brickList) {
             clone.GetComponent<Rigidbody>().constraints = 0;
         }

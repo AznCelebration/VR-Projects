@@ -38,7 +38,7 @@ public class LaserScript : MonoBehaviour {
         laser.GetComponent<Renderer>().enabled = true;
         particlesys.Play();
         Vector3 hitpos = currLook.transform.position.normalized * 3;
-        yield return new WaitForSeconds(1);
+        yield return new WaitForSeconds(0.5f);
         positions[0] = cam.position + hitpos;
         laser.SetPositions(positions);
         particlesys.Stop();
