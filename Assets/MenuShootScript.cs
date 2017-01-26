@@ -24,6 +24,7 @@ public class MenuShootScript : MonoBehaviour {
     public AudioClip CannonBlast;
     public AudioClip Outside;
     public AudioClip LaserSound;
+    public AudioClip BrickHard;
     
     public bool On = false;
     private string mode = "none";
@@ -114,6 +115,7 @@ public class MenuShootScript : MonoBehaviour {
             foreach (Transform child in brickFrag.transform) {
                 child.GetComponent<Rigidbody>().velocity = -Cam.forward.normalized * 10;
             }
+            audio.PlayOneShot(BrickHard);
             Destroy(currLook);
         }
     }

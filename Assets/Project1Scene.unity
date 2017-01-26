@@ -415,6 +415,7 @@ MonoBehaviour:
   CannonBlast: {fileID: 8300000, guid: 946360df827981041a5f10569d2aee01, type: 3}
   Outside: {fileID: 8300000, guid: b27a2d03c53183b47a10f0d4be2f1cc5, type: 3}
   LaserSound: {fileID: 8300000, guid: 987cba22b57f2bb4ca64f1f0dcb0324b, type: 3}
+  BrickHard: {fileID: 8300000, guid: 27ab5e5e4b8c7094c9f125ec495bb818, type: 3}
   On: 0
 --- !u!4 &373695395
 Transform:
