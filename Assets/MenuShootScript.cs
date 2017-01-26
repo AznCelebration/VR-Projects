@@ -13,12 +13,16 @@ public class MenuShootScript : MonoBehaviour {
     public GameObject MenuScreen;
     public GameObject CannonballPrefab;
     public GameObject Laser;
+    public GameObject BrickFrag;
 
     public Texture Main;
     public Texture Lazer;
     public Texture Cannon;
     public Texture None;
     public Texture Blank;
+
+    public AudioClip CannonBlast;
+    public AudioClip Outside;
 
     public bool On = false;
     private string mode = "none";
@@ -53,7 +57,7 @@ public class MenuShootScript : MonoBehaviour {
         Vector3 forward = new Vector3(Cam.forward.x, 0, Cam.forward.z);
         if (!On) {
             if (Menu.position.y == 0.5f) {
-                Menu.position = new Vector3(Cam.position.x, 0.5f, Cam.position.z) + forward.normalized * 3.5f;
+                Menu.position = new Vector3(Cam.position.x, 0.5f, Cam.position.z) + forward.normalized * 5f;
                 if (MenuUI.tag != "Interact") {
                     MenuUI.tag = "Interact";
                 }
@@ -96,13 +100,19 @@ public class MenuShootScript : MonoBehaviour {
 
     void Shoot(GameObject currLook) {
         GameObject cannonball;
+        AudioSource audio = Menu.GetComponent<AudioSource>();
         if (mode == "cannon") {
+            audio.PlayOneShot(CannonBlast);
             cannonball = Instantiate(CannonballPrefab, Cam.position, Quaternion.identity);
             cannonball.GetComponent<Rigidbody>().velocity = Cam.forward.normalized * 50;
         }
         else if (mode == "laser") {
-            Destroy(currLook);
             Laser.GetComponent<LaserScript>().SendMessage("drawLaser", currLook);
+            GameObject brickFrag = Instantiate(BrickFrag, currLook.transform.position, currLook.transform.rotation);
+            foreach (Transform child in brickFrag.transform) {
+                child.GetComponent<Rigidbody>().velocity = Cam.forward.normalized * 50;
+            }
+            Destroy(currLook);
         }
     }
 

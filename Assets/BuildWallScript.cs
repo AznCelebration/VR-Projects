@@ -30,6 +30,10 @@ public class BuildWallScript : MonoBehaviour {
         foreach (GameObject clone in brickList) {
             Destroy(clone);
         }
+        GameObject[] cannonballs = GameObject.FindGameObjectsWithTag("Cannonball");
+        foreach (GameObject ball in cannonballs) {
+            Destroy(ball);
+        }
         brickList.Clear();
         StartCoroutine(BrickStack());
 
