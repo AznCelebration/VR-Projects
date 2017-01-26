@@ -7,6 +7,8 @@ public class BuildWallScript : MonoBehaviour {
     public Texture Stack;
     public GameObject brick;
     public GameObject status;
+    public AudioClip BrickHard;
+    public AudioSource Audio;
     public bool stacking = false;
     private List<GameObject> brickList = new List<GameObject>();
 
@@ -33,6 +35,10 @@ public class BuildWallScript : MonoBehaviour {
         GameObject[] cannonballs = GameObject.FindGameObjectsWithTag("Cannonball");
         foreach (GameObject ball in cannonballs) {
             Destroy(ball);
+        }
+        GameObject[] brickFrags = GameObject.FindGameObjectsWithTag("BrickFrags");
+        foreach (GameObject frag in brickFrags) {
+            Destroy(frag);
         }
         brickList.Clear();
         StartCoroutine(BrickStack());
@@ -61,11 +67,13 @@ public class BuildWallScript : MonoBehaviour {
                 brickclone = Instantiate(brick, pos, Quaternion.LookRotation(origin));
                 brickclone.transform.rotation = Quaternion.Euler(0, brickclone.transform.eulerAngles.y, 0);
                 brickList.Add(brickclone);
-            } 
+            }
         }
         yield return new WaitForSeconds(4f);
         foreach (GameObject clone in brickList) {
-            clone.GetComponent<Rigidbody>().constraints = 0;
+            if (clone != null) {
+                clone.GetComponent<Rigidbody>().constraints = 0;
+            }
         }
         stacking = false;
     }

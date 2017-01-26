@@ -5,6 +5,8 @@ using UnityEngine;
 public class LookScript : MonoBehaviour {
     public Transform cam;
     public GameObject shootController;
+    public GameObject buildWallController;
+
     private GameObject prev = null;
     private int gazeDuration = 0;
 

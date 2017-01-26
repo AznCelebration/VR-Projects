@@ -23,7 +23,8 @@ public class MenuShootScript : MonoBehaviour {
 
     public AudioClip CannonBlast;
     public AudioClip Outside;
-
+    public AudioClip LaserSound;
+    
     public bool On = false;
     private string mode = "none";
 
@@ -107,10 +108,11 @@ public class MenuShootScript : MonoBehaviour {
             cannonball.GetComponent<Rigidbody>().velocity = Cam.forward.normalized * 50;
         }
         else if (mode == "laser") {
+            audio.PlayOneShot(LaserSound);
             Laser.GetComponent<LaserScript>().SendMessage("drawLaser", currLook);
             GameObject brickFrag = Instantiate(BrickFrag, currLook.transform.position, currLook.transform.rotation);
             foreach (Transform child in brickFrag.transform) {
-                child.GetComponent<Rigidbody>().velocity = Cam.forward.normalized * 50;
+                child.GetComponent<Rigidbody>().velocity = -Cam.forward.normalized * 10;
             }
             Destroy(currLook);
         }
