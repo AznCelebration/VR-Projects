@@ -13,7 +13,7 @@ public class LookScript : MonoBehaviour {
 
     // Use this for initialization
     void Start () {
-
+        Application.targetFrameRate = 90;
     }
 	
 	// Update is called once per frame
