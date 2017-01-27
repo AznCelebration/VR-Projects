@@ -6,6 +6,7 @@ public class LookScript : MonoBehaviour {
     public Transform cam;
     public GameObject shootController;
     public GameObject buildWallController;
+    public GameObject player;
 
     private GameObject prev = null;
     private int gazeDuration = 0;
@@ -21,7 +22,7 @@ public class LookScript : MonoBehaviour {
         RaycastHit hit;
         if (Physics.Raycast(look, out hit, Mathf.Infinity)) {
             GameObject currLook = hit.collider.gameObject;
-            if (currLook.tag == "Interact") {
+            if (currLook.tag == "Interact" || currLook.tag == "BuildWall") {
                 if (prev == null) {
                     prev = currLook;
                 }
@@ -62,6 +63,9 @@ public class LookScript : MonoBehaviour {
                             break;
                         case "RightArrow":
                             shootController.SendMessage("Right");
+                            break;
+                        case "Terrain":
+                            player.transform.position = new Vector3(hit.point.x, 0, hit.point.z);
                             break;
                         default: break;
                     }

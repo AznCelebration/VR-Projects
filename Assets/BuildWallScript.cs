@@ -5,10 +5,14 @@ using UnityEngine;
 public class BuildWallScript : MonoBehaviour {
     public Texture Reset;
     public Texture Stack;
+
     public GameObject brick;
     public GameObject status;
+    public GameObject player;
+    
     public AudioClip BrickHard;
     public AudioSource Audio;
+
     public bool stacking = false;
     private List<GameObject> brickList = new List<GameObject>();
 
@@ -26,6 +30,10 @@ public class BuildWallScript : MonoBehaviour {
             status.GetComponent<Renderer>().material.mainTexture = Reset;
         }
 	}
+
+    void LateUpdate() {
+        status.transform.position = new Vector3(player.transform.position.x, 35f, player.transform.position.z);
+    }
 
     void Rebuild()
     {

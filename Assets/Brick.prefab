@@ -204,3 +204,4 @@ MonoBehaviour:
   BrickHard: {fileID: 8300000, guid: 27ab5e5e4b8c7094c9f125ec495bb818, type: 3}
   BrickSoil: {fileID: 8300000, guid: fff69d50fc5a8b54f8d8170dd8aeae77, type: 3}
   Audio: {fileID: 82551308685136550}
+  BuildWall: {fileID: 0}

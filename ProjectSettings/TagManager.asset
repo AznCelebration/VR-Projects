@@ -7,6 +7,8 @@ TagManager:
   - Interact
   - Cannonball
   - BrickFrags
+  - Terrain
+  - BuildWall
   layers:
   - Default
   - TransparentFX
