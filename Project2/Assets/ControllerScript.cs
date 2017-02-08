@@ -4,8 +4,8 @@ using UnityEngine;
 
 public class ControllerScript : MonoBehaviour {
 
-    public GameObject Left;
-    public GameObject Right;
+    public GameObject Controller;
+    public OVRInput.Controller Control;
     public GameObject player;
     public GameObject chair;
     public GameObject locker;
@@ -14,176 +14,152 @@ public class ControllerScript : MonoBehaviour {
     public GameObject desk;
     public GameObject whiteboard;
 
-    private string leftMode;
-    private string rightMode;
-    private RaycastHit leftHit;
-    private RaycastHit rightHit;
-    private GameObject leftcurrObj;
-    private GameObject rightcurrObj;
-    private string leftspawn;
-    private string rightspawn;
-    private bool leftThrowing;
-    private bool rightThrowing;
+    private string mode;
+    private RaycastHit hit;
+    private GameObject currObj;
+    private string spawn;
+    private bool throwing;
+    private bool respawn;
+    private Vector3 toSpawn;
 
     // Use this for initialization
     void Start() {
-        leftMode = "tele";
-        rightMode = "tele";
-        leftcurrObj.SetActive(false);
-        rightcurrObj.SetActive(false);
-        leftThrowing = false;
-        rightThrowing = false;
+        mode = "tele";
+        throwing = false;
+        respawn = false;
     }
 
     // Update is called once per frame
     void Update() {
 
-        Ray leftRay = new Ray(Left.transform.position, Left.transform.forward);
-        Ray rightRay = new Ray(Right.transform.position, Right.transform.forward);
+        Ray ray = new Ray(Controller.transform.position, Controller.transform.forward);
 
-        if (Physics.Raycast(leftRay, out leftHit, Mathf.Infinity)) {
-            if (leftHit.collider.gameObject.name == "Floor") {
-                if (OVRInput.GetUp(OVRInput.RawButton.LIndexTrigger)) {
-                    player.transform.position = new Vector3(leftHit.point.x, 8, leftHit.point.z);
+        if (Physics.Raycast(ray, out hit, Mathf.Infinity)) {
+            if (hit.collider.gameObject.name == "Floor") {
+                if (OVRInput.GetUp(OVRInput.Button.PrimaryIndexTrigger,Control)) {
+                    print(Controller.name);
+                    if (mode == "tele") {
+                        player.transform.position = new Vector3(hit.point.x, 8, hit.point.z);
+                    }
+                    else if (mode == "spawn") {
+                        throwing = true;
+                        toSpawn = hit.point;
+                        currObj.GetComponent<Rigidbody>().isKinematic = true;
+                        currObj.GetComponent<Rigidbody>().detectCollisions = false;
+                    }
                 }
             }
         }
 
-        if (Physics.Raycast(rightRay, out rightHit, Mathf.Infinity)) {
-            if (rightHit.collider.gameObject.name == "Floor") {
-                if (OVRInput.GetUp(OVRInput.RawButton.RIndexTrigger)) {
-                    player.transform.position = new Vector3(rightHit.point.x, 8, rightHit.point.z);
-                }
+        if (throwing) {
+            Vector3 toPos = new Vector3(0,0,0);
+            Vector3 toScale = new Vector3(0, 0, 0);
+            switch (spawn) {
+                case "desk":
+                    toPos = new Vector3(toSpawn.x, 6f, toSpawn.z);
+                    toScale = desk.transform.localScale;
+                    currObj.transform.localScale = Vector3.MoveTowards(currObj.transform.localScale, desk.transform.localScale, 1f);
+                    currObj.transform.position = Vector3.MoveTowards(currObj.transform.position, new Vector3(toSpawn.x, 6f, toSpawn.z), 0.3f);
+                    break;
+                case "chair":
+                    toPos = new Vector3(toSpawn.x, 4f, toSpawn.z);
+                    toScale = chair.transform.localScale;
+                    currObj.transform.localScale = Vector3.MoveTowards(currObj.transform.localScale, chair.transform.localScale, 0.05f);
+                    currObj.transform.position = Vector3.MoveTowards(currObj.transform.position, new Vector3(toSpawn.x, 4f, toSpawn.z), 0.3f);
+                    break;
+                case "storage":
+                    toPos = new Vector3(toSpawn.x, 4f, toSpawn.z);
+                    toScale = storage.transform.localScale;
+                    currObj.transform.localScale = Vector3.MoveTowards(currObj.transform.localScale, storage.transform.localScale, 0.05f);
+                    currObj.transform.position = Vector3.MoveTowards(currObj.transform.position, new Vector3(toSpawn.x, 4f, toSpawn.z), 0.3f);
+                    break;
+                case "locker":
+                    toPos = new Vector3(toSpawn.x, 6f, toSpawn.z);
+                    toScale = locker.transform.localScale;
+                    currObj.transform.localScale = Vector3.MoveTowards(currObj.transform.localScale, locker.transform.localScale, 1f);
+                    currObj.transform.position = Vector3.MoveTowards(currObj.transform.position, new Vector3(toSpawn.x, 6f, toSpawn.z), 0.3f);
+                    break;
+                case "tv":
+                    toPos = new Vector3(toSpawn.x, 6f, toSpawn.z);
+                    toScale = tv.transform.localScale;
+                    currObj.transform.localScale = Vector3.MoveTowards(currObj.transform.localScale, tv.transform.localScale, 1f);
+                    currObj.transform.position = Vector3.MoveTowards(currObj.transform.position, new Vector3(toSpawn.x, 6f, toSpawn.z), 0.3f);
+                    break;
+                case "whiteboard":
+                    currObj.transform.localScale = Vector3.MoveTowards(currObj.transform.localScale, whiteboard.transform.localScale, 0.1f);
+                    break;
             }
 
+            if (currObj.transform.position == toPos && currObj.transform.localScale == toScale ) {
+                throwing = false;
+                currObj.GetComponent<Rigidbody>().isKinematic = false;
+                currObj.GetComponent<Rigidbody>().detectCollisions = true;
+                currObj = null;
+                respawn = true;
+            }
         }
 
-        if (leftMode == "spawn") {
-            if (OVRInput.GetUp(OVRInput.RawButton.X)) {
-                Destroy(leftcurrObj);
-                switch (leftspawn) {
+        if (mode == "spawn") {
+            if ((OVRInput.GetUp(OVRInput.Button.One,Control) || respawn) && !throwing) {
+                if (currObj != null) {
+                    Destroy(currObj);
+                }
+                respawn = false;
+                switch (spawn) {
                     case "desk":
-                        leftspawn = "chair";
-                        leftcurrObj = Instantiate(chair, Left.transform.position + Left.transform.up.normalized * 0.1f, chair.transform.rotation);
-                        leftcurrObj.transform.localScale *= 0.01f;
+                        spawn = "chair";
+                        currObj = Instantiate(chair, Controller.transform.position + Controller.transform.up.normalized * 0.1f, chair.transform.rotation);
+                        currObj.transform.localScale *= 0.01f;
                         break;
                     case "chair":
-                        leftspawn = "storage";
-                        leftcurrObj = Instantiate(storage, Left.transform.position + Left.transform.up.normalized * 0.1f, storage.transform.rotation);
-                        leftcurrObj.transform.localScale *= 0.01f;
+                        spawn = "storage";
+                        currObj = Instantiate(storage, Controller.transform.position + Controller.transform.up.normalized * 0.1f, storage.transform.rotation);
+                        currObj.transform.localScale *= 0.01f;
                         break;
                     case "storage":
-                        leftspawn = "locker";
-                        leftcurrObj = Instantiate(locker, Left.transform.position + Left.transform.up.normalized * 0.1f, locker.transform.rotation);
-                        leftcurrObj.transform.localScale *= 0.01f;
+                        spawn = "locker";
+                        currObj = Instantiate(locker, Controller.transform.position + Controller.transform.up.normalized * 0.1f, locker.transform.rotation);
+                        currObj.transform.localScale *= 0.01f;
                         break;
                     case "locker":
-                        leftspawn = "tv";
-                        leftcurrObj = Instantiate(tv, Left.transform.position + Left.transform.up.normalized * 0.1f, tv.transform.rotation);
-                        leftcurrObj.transform.localScale *= 0.01f;
+                        spawn = "tv";
+                        currObj = Instantiate(tv, Controller.transform.position + Controller.transform.up.normalized * 0.1f, tv.transform.rotation);
+                        currObj.transform.localScale *= 0.01f;
                         break;
                     case "tv":
-                        leftspawn = "whiteboard";
-                        leftcurrObj = Instantiate(whiteboard, Left.transform.position + Left.transform.up.normalized * 0.1f, whiteboard.transform.rotation);
-                        leftcurrObj.transform.localScale *= 0.1f;
+                        spawn = "whiteboard";
+                        currObj = Instantiate(whiteboard, Controller.transform.position + Controller.transform.up.normalized * 0.1f, whiteboard.transform.rotation);
+                        currObj.transform.localScale *= 0.1f;
                         break;
                     case "whiteboard":
-                        leftspawn = "desk";
-                        leftcurrObj = Instantiate(desk, Left.transform.position + Left.transform.up.normalized * 0.1f, desk.transform.rotation);
-                        leftcurrObj.transform.localScale *= 0.01f;
+                        spawn = "desk";
+                        currObj = Instantiate(desk, Controller.transform.position + Controller.transform.up.normalized * 0.1f, desk.transform.rotation);
+                        currObj.transform.localScale *= 0.01f;
                         break;
                 }
             }
 
-            if(OVRInput.GetUp(OVRInput.RawButton.LIndexTrigger)) {
-                leftThrowing = true;
-            }
-
-            if(leftThrowing) {
-                Vector3.MoveTowards(leftcurrObj.transform.position, new Vector3(leftHit.point.x, 0.5f, leftHit.point.z), 1f);
-                if (leftcurrObj.transform.position == leftHit.point) {
-                    leftThrowing = false;
-                }
-            }
-            float y = OVRInput.Get(OVRInput.RawAxis2D.LThumbstick).y * 1f;
-            float x = - OVRInput.Get(OVRInput.RawAxis2D.LThumbstick).x * 1f;
-            leftcurrObj.transform.Rotate(new Vector3(0,x,0),Space.World);
-            leftcurrObj.transform.Rotate(Vector3.Cross(new Vector3(0,1,0), new Vector3(Left.transform.forward.x,0,Left.transform.forward.z).normalized), y, Space.World);
+            float y = OVRInput.Get(OVRInput.Axis2D.PrimaryThumbstick,Control).y * 1f;
+            float x = - OVRInput.Get(OVRInput.Axis2D.PrimaryThumbstick,Control).x * 1f;
+            currObj.transform.Rotate(new Vector3(0,x,0),Space.World);
+            currObj.transform.Rotate(Vector3.Cross(new Vector3(0,1,0), new Vector3(Controller.transform.forward.x,0,Controller.transform.forward.z).normalized), y, Space.World);
         }
 
-        if (rightMode == "spawn") {
-            if (OVRInput.GetUp(OVRInput.RawButton.A)) {
-                Destroy(rightcurrObj);
-                switch (rightspawn) {
-                    case "desk":
-                        rightspawn = "chair";
-                        rightcurrObj = Instantiate(chair, Right.transform.position + Right.transform.up.normalized * 0.1f, chair.transform.rotation);
-                        rightcurrObj.transform.localScale *= 0.01f;
-                        break;
-                    case "chair":
-                        rightspawn = "storage";
-                        rightcurrObj = Instantiate(storage, Right.transform.position + Right.transform.up.normalized * 0.1f, storage.transform.rotation);
-                        rightcurrObj.transform.localScale *= 0.01f;
-                        break;
-                    case "storage":
-                        rightspawn = "locker";
-                        rightcurrObj = Instantiate(storage, Right.transform.position + Right.transform.up.normalized * 0.1f, locker.transform.rotation);
-                        rightcurrObj.transform.localScale *= 0.01f;
-                        break;
-                    case "locker":
-                        rightspawn = "tv";
-                        rightcurrObj = Instantiate(storage, Right.transform.position + Right.transform.up.normalized * 0.1f, tv.transform.rotation);
-                        rightcurrObj.transform.localScale *= 0.1f;
-                        break;
-                    case "tv":
-                        rightspawn = "whiteboard";
-                        rightcurrObj = Instantiate(storage, Right.transform.position + Right.transform.up.normalized * 0.1f, whiteboard.transform.rotation);
-                        rightcurrObj.transform.localScale *= 0.1f;
-                        break;
-                    case "whiteboard":
-                        rightspawn = "desk";
-                        rightcurrObj = Instantiate(storage, Right.transform.position + Right.transform.up.normalized * 0.1f, desk.transform.rotation);
-                        rightcurrObj.transform.localScale *= 0.01f;
-                        break;
-                }
-            }
-            float y = OVRInput.Get(OVRInput.RawAxis2D.RThumbstick).y * 1f;
-            float x = -OVRInput.Get(OVRInput.RawAxis2D.RThumbstick).x * 1f;
-            rightcurrObj.transform.Rotate(new Vector3(0, x, 0), Space.World);
-            rightcurrObj.transform.Rotate(Vector3.Cross(new Vector3(0, 1, 0), new Vector3(Right.transform.forward.x, 0, Right.transform.forward.z).normalized), y, Space.World);
-        }
-
-        if (OVRInput.GetUp(OVRInput.RawButton.A) && rightMode != "spawn") {
-            rightMode = "spawn";
-            rightcurrObj = Instantiate(desk, Right.transform.position + Right.transform.up.normalized * 0.1f, desk.transform.rotation);
-            rightspawn = "desk";
-            rightcurrObj.transform.localScale *= 0.01f;
-            rightcurrObj.SetActive(true);
-
-        }
-
-        if (OVRInput.GetUp(OVRInput.RawButton.X) && leftMode != "spawn") {
-            leftMode = "spawn";
-            leftcurrObj = Instantiate(desk, Left.transform.position + Left.transform.up.normalized * 0.1f, desk.transform.rotation);
-            leftspawn = "desk";
-            leftcurrObj.transform.localScale *= 0.01f;
-            leftcurrObj.SetActive(true);
+        if (OVRInput.GetUp(OVRInput.Button.One,Control) && mode != "spawn") {
+            mode = "spawn";
+            currObj = Instantiate(desk, Controller.transform.position + Controller.transform.up.normalized * 0.1f, desk.transform.rotation);
+            spawn = "desk";
+            currObj.transform.localScale *= 0.01f;
+            currObj.SetActive(true);
         }
     }
 
     private void LateUpdate() {
-        Left.GetComponent<LineRenderer>().SetPosition(0, Left.transform.position - Left.transform.up.normalized * 0.02f);
-        Left.GetComponent<LineRenderer>().SetPosition(1, leftHit.point);
+        Controller.GetComponent<LineRenderer>().SetPosition(0, Controller.transform.position - Controller.transform.up.normalized * 0.02f);
+        Controller.GetComponent<LineRenderer>().SetPosition(1, hit.point);
 
-        Right.GetComponent<LineRenderer>().SetPosition(0, Right.transform.position - Right.transform.up.normalized * 0.02f);
-        Right.GetComponent<LineRenderer>().SetPosition(1, rightHit.point);
-
-        if (leftcurrObj != null) {
-            leftcurrObj.transform.position = Left.transform.position + Left.transform.up.normalized * 0.1f;
-        }
-
-        if (rightcurrObj != null) {
-            rightcurrObj.transform.position = Right.transform.position + Right.transform.up.normalized * 0.1f;
+        if (currObj != null && !throwing) {
+            currObj.transform.position = Controller.transform.position + Controller.transform.up.normalized * 0.1f;
         }
     }
 }
