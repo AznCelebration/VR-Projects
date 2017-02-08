@@ -13,6 +13,7 @@ public class ControllerScript : MonoBehaviour {
     public GameObject TvRigged;
     public GameObject DeskRigged;
     public GameObject whiteboard;
+    public GameObject hands;
 
     private string mode;
     private RaycastHit hit;
@@ -34,14 +35,13 @@ public class ControllerScript : MonoBehaviour {
 
     // Update is called once per frame
     void Update() {
-
         Ray ray = new Ray(Controller.transform.position, Controller.transform.forward);
 
         if (Physics.Raycast(ray, out hit, Mathf.Infinity)) {
             if (hit.collider.gameObject.name == "Floor") {
-                if (OVRInput.GetUp(OVRInput.Button.PrimaryIndexTrigger, Control)) {
+                if (OVRInput.GetDown(OVRInput.Button.PrimaryIndexTrigger, Control)) {
                     if (mode == "tele") {
-                        player.transform.position = new Vector3(hit.point.x, 8, hit.point.z);
+                        player.transform.position = new Vector3(hit.point.x, 1, hit.point.z);
                     }
                     else if (mode == "spawn" || mode == "move") {
                         throwing = true;
@@ -53,7 +53,7 @@ public class ControllerScript : MonoBehaviour {
             }
             
             else if (hit.collider.gameObject.tag == "Moveable") {
-                if (OVRInput.GetUp(OVRInput.Button.PrimaryHandTrigger, Control) && mode != "move") {
+                if (OVRInput.GetDown(OVRInput.Button.PrimaryHandTrigger, Control) && mode != "move" && mode != "spawn") {
                     mode = "move";
                     sucking = true;
                     if (currObj != null) {
@@ -62,33 +62,38 @@ public class ControllerScript : MonoBehaviour {
                     currObj = hit.collider.gameObject.transform.parent.parent.gameObject;
                     currObj.GetComponent<Rigidbody>().isKinematic = true;
                     currObj.GetComponent<Rigidbody>().detectCollisions = false;
-                    toScale = currObj.transform.localScale * 0.01f;
+                    toScale = currObj.transform.localScale * 0.1f;
+                    
                 }
             }
         }
         
+        if(OVRInput.GetDown(OVRInput.Button.PrimaryThumbstick, Control)) {
+            hands.SetActive(true);
+            this.gameObject.SetActive(false);
+        }
 
         if (sucking) {
             Vector3 toPos = Controller.transform.position + Controller.transform.up.normalized * 0.1f;
             switch (currObj.name) {
                 case "DeskRigged":
-                    currObj.transform.localScale = Vector3.MoveTowards(currObj.transform.localScale, toScale, 1f);
                     currObj.transform.position = Vector3.MoveTowards(currObj.transform.position, toPos, 0.3f);
+                    currObj.transform.localScale = Vector3.MoveTowards(currObj.transform.localScale, toScale, 0.5f);
                     break;
                 case "ChairRigged":
-                    currObj.transform.localScale = Vector3.MoveTowards(currObj.transform.localScale, toScale, 1f);
+                    currObj.transform.localScale = Vector3.MoveTowards(currObj.transform.localScale, toScale, 0.5f);
                     currObj.transform.position = Vector3.MoveTowards(currObj.transform.position, toPos, 0.3f);
                     break;
                 case "CabinetRigged":
-                    currObj.transform.localScale = Vector3.MoveTowards(currObj.transform.localScale, toScale, 1f);
+                    currObj.transform.localScale = Vector3.MoveTowards(currObj.transform.localScale, toScale, 0.5f);
                     currObj.transform.position = Vector3.MoveTowards(currObj.transform.position, toPos, 0.3f);
                     break;
                 case "LockerRigged":
-                    currObj.transform.localScale = Vector3.MoveTowards(currObj.transform.localScale, toScale, 1f);
+                    currObj.transform.localScale = Vector3.MoveTowards(currObj.transform.localScale, toScale, 0.5f);
                     currObj.transform.position = Vector3.MoveTowards(currObj.transform.position, toPos, 0.3f);
                     break;
                 case "TvRigged":
-                    currObj.transform.localScale = Vector3.MoveTowards(currObj.transform.localScale, toScale, 1f);
+                    currObj.transform.localScale = Vector3.MoveTowards(currObj.transform.localScale, toScale, 0.5f);
                     currObj.transform.position = Vector3.MoveTowards(currObj.transform.position, toPos, 0.3f);
                     break;
                 case "whiteboard":
@@ -113,34 +118,34 @@ public class ControllerScript : MonoBehaviour {
             }
             switch (toCheck) {
                 case "DeskRigged":
-                    toPos = new Vector3(toSpawn.x, 6f, toSpawn.z);
+                    toPos = new Vector3(toSpawn.x, 1f, toSpawn.z);
                     toScale = DeskRigged.transform.localScale;
                     currObj.transform.localScale = Vector3.MoveTowards(currObj.transform.localScale, DeskRigged.transform.localScale, 1f);
-                    currObj.transform.position = Vector3.MoveTowards(currObj.transform.position, new Vector3(toSpawn.x, 6f, toSpawn.z), 0.3f);
+                    currObj.transform.position = Vector3.MoveTowards(currObj.transform.position, new Vector3(toSpawn.x, 1f, toSpawn.z), 0.3f);
                     break;
                 case "ChairRigged":
-                    toPos = new Vector3(toSpawn.x, 4f, toSpawn.z);
+                    toPos = new Vector3(toSpawn.x, 1f, toSpawn.z);
                     toScale = ChairRigged.transform.localScale;
                     currObj.transform.localScale = Vector3.MoveTowards(currObj.transform.localScale, ChairRigged.transform.localScale, 0.05f);
-                    currObj.transform.position = Vector3.MoveTowards(currObj.transform.position, new Vector3(toSpawn.x, 4f, toSpawn.z), 0.3f);
+                    currObj.transform.position = Vector3.MoveTowards(currObj.transform.position, new Vector3(toSpawn.x, 1f, toSpawn.z), 0.3f);
                     break;
                 case "CabinetRigged":
-                    toPos = new Vector3(toSpawn.x, 4f, toSpawn.z);
+                    toPos = new Vector3(toSpawn.x, 1f, toSpawn.z);
                     toScale = CabinetRigged.transform.localScale;
                     currObj.transform.localScale = Vector3.MoveTowards(currObj.transform.localScale, CabinetRigged.transform.localScale, 0.05f);
-                    currObj.transform.position = Vector3.MoveTowards(currObj.transform.position, new Vector3(toSpawn.x, 4f, toSpawn.z), 0.3f);
+                    currObj.transform.position = Vector3.MoveTowards(currObj.transform.position, new Vector3(toSpawn.x, 1f, toSpawn.z), 0.3f);
                     break;
                 case "LockerRigged":
-                    toPos = new Vector3(toSpawn.x, 6f, toSpawn.z);
+                    toPos = new Vector3(toSpawn.x, 1f, toSpawn.z);
                     toScale = LockerRigged.transform.localScale;
                     currObj.transform.localScale = Vector3.MoveTowards(currObj.transform.localScale, LockerRigged.transform.localScale, 1f);
-                    currObj.transform.position = Vector3.MoveTowards(currObj.transform.position, new Vector3(toSpawn.x, 6f, toSpawn.z), 0.3f);
+                    currObj.transform.position = Vector3.MoveTowards(currObj.transform.position, new Vector3(toSpawn.x, 1f, toSpawn.z), 0.3f);
                     break;
                 case "TvRigged":
-                    toPos = new Vector3(toSpawn.x, 6f, toSpawn.z);
+                    toPos = new Vector3(toSpawn.x, 1f, toSpawn.z);
                     toScale = TvRigged.transform.localScale;
                     currObj.transform.localScale = Vector3.MoveTowards(currObj.transform.localScale, TvRigged.transform.localScale, 1f);
-                    currObj.transform.position = Vector3.MoveTowards(currObj.transform.position, new Vector3(toSpawn.x, 6f, toSpawn.z), 0.3f);
+                    currObj.transform.position = Vector3.MoveTowards(currObj.transform.position, new Vector3(toSpawn.x, 1f, toSpawn.z), 0.3f);
                     break;
                 case "whiteboard":
                     currObj.transform.localScale = Vector3.MoveTowards(currObj.transform.localScale, whiteboard.transform.localScale, 0.1f);
@@ -151,6 +156,7 @@ public class ControllerScript : MonoBehaviour {
                 throwing = false;
                 currObj.GetComponent<Rigidbody>().isKinematic = false;
                 currObj.GetComponent<Rigidbody>().detectCollisions = true;
+                currObj.GetComponent<Rigidbody>().collisionDetectionMode = CollisionDetectionMode.Continuous;
                 currObj = null;
                 if(mode != "move") {
                     respawn = true;
@@ -169,7 +175,7 @@ public class ControllerScript : MonoBehaviour {
         }
 
         if (mode == "spawn") {
-            if ((OVRInput.GetUp(OVRInput.Button.One,Control) || respawn) && !throwing) {
+            if ((OVRInput.GetDown(OVRInput.Button.One,Control) || respawn) && !throwing) {
                 if (currObj != null) {
                     Destroy(currObj);
                 }
@@ -178,47 +184,61 @@ public class ControllerScript : MonoBehaviour {
                     case "DeskRigged":
                         spawn = "ChairRigged";
                         currObj = Instantiate(ChairRigged, Controller.transform.position + Controller.transform.up.normalized * 0.1f, ChairRigged.transform.rotation);
-                        currObj.transform.localScale *= 0.01f;
+                        currObj.name = "ChairRigged";
+                        currObj.transform.localScale *= 0.1f;
                         break;
                     case "ChairRigged":
                         spawn = "CabinetRigged";
                         currObj = Instantiate(CabinetRigged, Controller.transform.position + Controller.transform.up.normalized * 0.1f, CabinetRigged.transform.rotation);
-                        currObj.transform.localScale *= 0.01f;
+                        currObj.name = "CabinetRigged";
+                        currObj.transform.localScale *= 0.1f;
                         break;
                     case "CabinetRigged":
                         spawn = "LockerRigged";
                         currObj = Instantiate(LockerRigged, Controller.transform.position + Controller.transform.up.normalized * 0.1f, LockerRigged.transform.rotation);
-                        currObj.transform.localScale *= 0.01f;
+                        currObj.name = "LockerRigged";
+                        currObj.transform.localScale *= 0.1f;
                         break;
                     case "LockerRigged":
                         spawn = "TvRigged";
                         currObj = Instantiate(TvRigged, Controller.transform.position + Controller.transform.up.normalized * 0.1f, TvRigged.transform.rotation);
-                        currObj.transform.localScale *= 0.01f;
+                        currObj.name = "TvRigged";
+                        currObj.transform.localScale *= 0.1f;
                         break;
                     case "TvRigged":
                         spawn = "whiteboard";
                         currObj = Instantiate(whiteboard, Controller.transform.position + Controller.transform.up.normalized * 0.1f, whiteboard.transform.rotation);
+                        currObj.name = "WhiteBoard";
                         currObj.transform.localScale *= 0.1f;
                         break;
                     case "whiteboard":
                         spawn = "DeskRigged";
                         currObj = Instantiate(DeskRigged, Controller.transform.position + Controller.transform.up.normalized * 0.1f, DeskRigged.transform.rotation);
-                        currObj.transform.localScale *= 0.01f;
+                        currObj.name = "DeskRigged";
+                        currObj.transform.localScale *= 0.1f;
                         break;
                 }
+                currObj.GetComponent<Rigidbody>().detectCollisions = false;
             }
 
             float y = OVRInput.Get(OVRInput.Axis2D.PrimaryThumbstick,Control).y * 1f;
             float x = - OVRInput.Get(OVRInput.Axis2D.PrimaryThumbstick,Control).x * 1f;
             currObj.transform.Rotate(new Vector3(0,x,0),Space.World);
             currObj.transform.Rotate(Vector3.Cross(new Vector3(0,1,0), new Vector3(Controller.transform.forward.x,0,Controller.transform.forward.z).normalized), y, Space.World);
+
+            if(OVRInput.GetDown(OVRInput.Button.Two, Control)) {
+                mode = "tele";
+                Destroy(currObj);
+                currObj = null;
+            }
         }
 
-        if (OVRInput.GetUp(OVRInput.Button.One,Control) && mode != "spawn") {
+        if (OVRInput.GetDown(OVRInput.Button.One,Control) && mode != "spawn" && mode != "move") {
             mode = "spawn";
             currObj = Instantiate(DeskRigged, Controller.transform.position + Controller.transform.up.normalized * 0.1f, DeskRigged.transform.rotation);
             spawn = "DeskRigged";
-            currObj.transform.localScale *= 0.01f;
+            currObj.name = "DeskRigged";
+            currObj.transform.localScale *= 0.1f;
             currObj.SetActive(true);
         }
     }
