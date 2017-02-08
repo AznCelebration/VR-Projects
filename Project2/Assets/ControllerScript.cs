@@ -24,7 +24,7 @@ public class ControllerScript : MonoBehaviour {
     private Vector3 toSpawn;
     private bool sucking;
     private Vector3 toScale;
-
+    private Dictionary<GameObject> hits;
     // Use this for initialization
     void Start() {
         mode = "tele";
@@ -53,17 +53,24 @@ public class ControllerScript : MonoBehaviour {
             }
             
             else if (hit.collider.gameObject.tag == "Moveable") {
-                if (OVRInput.GetDown(OVRInput.Button.PrimaryHandTrigger, Control) && mode != "move" && mode != "spawn") {
+                if (OVRInput.Get(OVRInput.Button.PrimaryHandTrigger, Control) && mode != "move" && mode != "spawn") {
+                    hits[hit.collider.gameObject.transform.parent.parent.gameObject.GetHashCode] = hit.collider.gameObject.transform.parent.parent.gameObject;
+                }
+                if (OVRInput.GetUp(OVRInput.Button.PrimaryHandTrigger, Control) && mode != "move" && mode != "spawn") {
                     mode = "move";
                     sucking = true;
                     if (currObj != null) {
                         Destroy(currObj);
                     }
-                    currObj = hit.collider.gameObject.transform.parent.parent.gameObject;
-                    currObj.GetComponent<Rigidbody>().isKinematic = true;
-                    currObj.GetComponent<Rigidbody>().detectCollisions = false;
-                    toScale = currObj.transform.localScale * 0.1f;
-                    
+                    if (hits.Count == 1) {
+                        currObj = hit.collider.gameObject.transform.parent.parent.gameObject;
+                        currObj.GetComponent<Rigidbody>().isKinematic = true;
+                        currObj.GetComponent<Rigidbody>().detectCollisions = false;
+                        toScale = currObj.transform.localScale * 0.1f;
+                    }
+                    else {
+                        GameObject parent = new GameObject();
+                    }
                 }
             }
         }
