@@ -24,37 +24,49 @@ public class ControllerScript : MonoBehaviour {
     private Vector3 toSpawn;
     private bool sucking;
     private Vector3 toScale;
-    private Dictionary<GameObject> hits;
+    private Vector3 toGroupScale;
+    private Dictionary<int, GameObject> hits;
     // Use this for initialization
     void Start() {
         mode = "tele";
         throwing = false;
         respawn = false;
         sucking = false;
+        hits = new Dictionary<int, GameObject>();
+        toScale = new Vector3(0, 0, 0);
+        toGroupScale = new Vector3(0, 0, 0);
     }
 
     // Update is called once per frame
     void Update() {
         Ray ray = new Ray(Controller.transform.position, Controller.transform.forward);
-
         if (Physics.Raycast(ray, out hit, Mathf.Infinity)) {
             if (hit.collider.gameObject.name == "Floor") {
                 if (OVRInput.GetDown(OVRInput.Button.PrimaryIndexTrigger, Control)) {
                     if (mode == "tele") {
-                        player.transform.position = new Vector3(hit.point.x, 1, hit.point.z);
+                        player.transform.position = new Vector3(hit.point.x, 1.2f, hit.point.z);
                     }
                     else if (mode == "spawn" || mode == "move") {
                         throwing = true;
                         toSpawn = hit.point;
-                        currObj.GetComponent<Rigidbody>().isKinematic = true;
-                        currObj.GetComponent<Rigidbody>().detectCollisions = false;
+                        if (currObj.name == "Grouped") {
+                            foreach (Transform child in currObj.transform) {
+                                child.gameObject.GetComponent<Rigidbody>().isKinematic = true;
+                                child.gameObject.GetComponent<Rigidbody>().detectCollisions = false;
+                            }
+                        }
+                        else {
+                            currObj.GetComponent<Rigidbody>().isKinematic = true;
+                            currObj.GetComponent<Rigidbody>().detectCollisions = false;
+                        }
+                        
                     }
                 }
             }
             
             else if (hit.collider.gameObject.tag == "Moveable") {
                 if (OVRInput.Get(OVRInput.Button.PrimaryHandTrigger, Control) && mode != "move" && mode != "spawn") {
-                    hits[hit.collider.gameObject.transform.parent.parent.gameObject.GetHashCode] = hit.collider.gameObject.transform.parent.parent.gameObject;
+                    hits[hit.collider.gameObject.transform.parent.parent.gameObject.GetHashCode()] = hit.collider.gameObject.transform.parent.parent.gameObject;
                 }
                 if (OVRInput.GetUp(OVRInput.Button.PrimaryHandTrigger, Control) && mode != "move" && mode != "spawn") {
                     mode = "move";
@@ -62,15 +74,24 @@ public class ControllerScript : MonoBehaviour {
                     if (currObj != null) {
                         Destroy(currObj);
                     }
-                    if (hits.Count == 1) {
-                        currObj = hit.collider.gameObject.transform.parent.parent.gameObject;
-                        currObj.GetComponent<Rigidbody>().isKinematic = true;
-                        currObj.GetComponent<Rigidbody>().detectCollisions = false;
-                        toScale = currObj.transform.localScale * 0.1f;
+                    GameObject parent = new GameObject();
+                    Vector3 center = new Vector3(0, 0, 0);
+                    foreach (KeyValuePair<int, GameObject> entry in hits) {
+                        entry.Value.GetComponent<Rigidbody>().isKinematic = true;
+                        entry.Value.GetComponent<Rigidbody>().detectCollisions = false;
+                        center += entry.Value.transform.position;
                     }
-                    else {
-                        GameObject parent = new GameObject();
+                        
+                    center /= hits.Count;
+                    parent.transform.position = center;
+                    toGroupScale = parent.transform.localScale * 0.1f;
+
+                    foreach (KeyValuePair<int, GameObject> entry in hits) {
+                        entry.Value.transform.SetParent(parent.transform);
                     }
+                    currObj = parent;
+                    parent.name = "Grouped";
+                    hits.Clear();
                 }
             }
         }
@@ -105,6 +126,10 @@ public class ControllerScript : MonoBehaviour {
                     break;
                 case "whiteboard":
                     currObj.transform.localScale = Vector3.MoveTowards(currObj.transform.localScale, toScale, 0.3f);
+                    break;
+                case "Grouped":
+                    currObj.transform.localScale = Vector3.MoveTowards(currObj.transform.localScale, toGroupScale, 0.5f);
+                    currObj.transform.position = Vector3.MoveTowards(currObj.transform.position, toPos, 0.3f);
                     break;
             }
 
@@ -157,23 +182,57 @@ public class ControllerScript : MonoBehaviour {
                 case "whiteboard":
                     currObj.transform.localScale = Vector3.MoveTowards(currObj.transform.localScale, whiteboard.transform.localScale, 0.1f);
                     break;
+                case "Grouped":
+                    toPos = new Vector3(toSpawn.x, 1.2f, toSpawn.z);
+                    toScale = toGroupScale * 10;
+                    //currObj.transform.position = Vector3.MoveTowards(currObj.transform.position, toPos, 0.1f);
+                    currObj.transform.position = toPos;
+                    currObj.transform.localScale = Vector3.MoveTowards(currObj.transform.localScale, toScale, 1f);
+                    break;
             }
-
             if (currObj.transform.position == toPos && currObj.transform.localScale == toScale ) {
                 throwing = false;
-                currObj.GetComponent<Rigidbody>().isKinematic = false;
-                currObj.GetComponent<Rigidbody>().detectCollisions = true;
-                currObj.GetComponent<Rigidbody>().collisionDetectionMode = CollisionDetectionMode.Continuous;
-                currObj = null;
-                if(mode != "move") {
+                if (mode != "move") {
+                    switch (spawn) {
+                        case "DeskRigged":
+                            spawn = "whiteboard";
+                            break;
+                        case "ChairRigged":
+                            spawn = "DeskRigged";
+                            break;
+                        case "CabinetRigged":
+                            spawn = "ChairRigged";
+                            break;
+                        case "LockerRigged":
+                            spawn = "CabinetRigged";
+                            break;
+                        case "TvRigged":
+                            spawn = "LockerRigged";
+                            break;
+                        case "whiteboard":
+                            spawn = "DeskRigged";
+                            break;
+                    }
                     respawn = true;
+                    currObj.GetComponent<Rigidbody>().isKinematic = false;
+                    currObj.GetComponent<Rigidbody>().detectCollisions = true;
+                    currObj = null;
                 }
-                else {
+                else if (mode == "move") {
                     mode = "tele";
+                    sucking = false;
+                    int childCount = currObj.transform.childCount;
+                    for (int i = 0; i < childCount; i++) {
+                        currObj.transform.GetChild(0).GetComponent<Rigidbody>().isKinematic = false;
+                        currObj.transform.GetChild(0).GetComponent<Rigidbody>().detectCollisions = true;
+                        currObj.transform.GetChild(0).SetParent(null);
+                    }
+                    Destroy(currObj);
+                    currObj = null;
                 }
             }
         }
-
+        
         if (mode == "move") {
             float y = OVRInput.Get(OVRInput.Axis2D.PrimaryThumbstick, Control).y * 1f;
             float x = -OVRInput.Get(OVRInput.Axis2D.PrimaryThumbstick, Control).x * 1f;
