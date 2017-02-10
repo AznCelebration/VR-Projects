@@ -6,6 +6,14 @@ public class HandScript : MonoBehaviour {
     public GameObject hand;
     public OVRInput.Controller Controller;
     public GameObject touch;
+    public GameObject player;
+    public GameObject centereye;
+    public GameObject ChairRigged;
+    public GameObject LockerRigged;
+    public GameObject CabinetRigged;
+    public GameObject TvRigged;
+    public GameObject DeskRigged;
+    public GameObject whiteboard;
 
     private GameObject holding;
     // Use this for initialization
@@ -32,7 +40,7 @@ public class HandScript : MonoBehaviour {
 
         }
         if (OVRInput.GetUp(OVRInput.Button.PrimaryHandTrigger, Controller)) {
-            if (holding != null) {
+            if (holding != null && holding.transform.parent == hand.transform) {
                 holding.transform.SetParent(null);
                 holding.GetComponent<Rigidbody>().isKinematic = false;
                 holding.GetComponent<Rigidbody>().velocity = OVRInput.GetLocalControllerVelocity(Controller);
@@ -43,6 +51,89 @@ public class HandScript : MonoBehaviour {
             touch.SetActive(true);
             this.gameObject.SetActive(false);
         }
-        
+        if(OVRInput.Get(OVRInput.Axis1D.PrimaryIndexTrigger, Controller) > 0) {
+            player.transform.position += centereye.transform.forward.normalized * 0.01f * OVRInput.Get(OVRInput.Axis1D.PrimaryIndexTrigger, Controller);
+        }
+        if (OVRInput.GetDown(OVRInput.Button.One, Controller)) {
+            Save();
+        }
+        else if (OVRInput.GetDown(OVRInput.Button.Two, Controller)) {
+            Load();
+        }
+    }
+
+    void Save() {
+        GameObject[] all = GameObject.FindGameObjectsWithTag("Model");
+        string toWrite = "";
+        foreach(GameObject model in all) {
+            toWrite += model.name;
+            toWrite += " ";
+            toWrite += model.transform.position.x;
+            toWrite += " ";
+            toWrite += model.transform.position.y;
+            toWrite += " ";
+            toWrite += model.transform.position.z;
+            toWrite += " ";
+            toWrite += model.transform.eulerAngles.x;
+            toWrite += " ";
+            toWrite += model.transform.eulerAngles.y;
+            toWrite += " ";
+            toWrite += model.transform.eulerAngles.z;
+            toWrite += '\n';
+        }
+        System.IO.File.WriteAllText("D:/SavedFurniture.txt", toWrite);
+    }
+
+    void Load() {
+        GameObject[] all = GameObject.FindGameObjectsWithTag("Model");
+        foreach(GameObject model in all) {
+            Destroy(model);
+        }
+        try {
+            string[] lines = System.IO.File.ReadAllLines(@"D:/SavedFurniture.txt");
+            GameObject spawn;
+            foreach (string line in lines) {
+                string[] tokens = line.Split(null);
+                switch (tokens[0]) {
+                    case "DeskRigged":
+                        spawn = Instantiate(DeskRigged, new Vector3(float.Parse(tokens[1]), float.Parse(tokens[2]), float.Parse(tokens[3])),
+                            Quaternion.Euler(float.Parse(tokens[4]),float.Parse(tokens[5]),
+                            float.Parse(tokens[6])));
+                        spawn.name = "DeskRigged";
+                        break;
+                    case "ChairRigged":
+                        spawn = Instantiate(ChairRigged, new Vector3(float.Parse(tokens[1]), float.Parse(tokens[2]), float.Parse(tokens[3])),
+                            Quaternion.Euler(ChairRigged.transform.rotation.x + float.Parse(tokens[4]), ChairRigged.transform.rotation.y + float.Parse(tokens[5]),
+                            ChairRigged.transform.rotation.z + float.Parse(tokens[6])));
+                        spawn.name = "ChairRigged";
+                        break;
+                    case "CabinetRigged":
+                        spawn = Instantiate(CabinetRigged, new Vector3(float.Parse(tokens[1]), float.Parse(tokens[2]), float.Parse(tokens[3])),
+                            Quaternion.Euler(CabinetRigged.transform.rotation.x + float.Parse(tokens[4]), CabinetRigged.transform.rotation.y + float.Parse(tokens[5]),
+                            CabinetRigged.transform.rotation.z + float.Parse(tokens[6])));
+                        spawn.name = "CabinetRigged";
+                        break;
+                    case "LockerRigged":
+                        spawn = Instantiate(LockerRigged, new Vector3(float.Parse(tokens[1]), float.Parse(tokens[2]), float.Parse(tokens[3])),
+                            Quaternion.Euler(LockerRigged.transform.rotation.x + float.Parse(tokens[4]), LockerRigged.transform.rotation.y + float.Parse(tokens[5]),
+                            LockerRigged.transform.rotation.z + float.Parse(tokens[6])));
+                        spawn.name = "LockerRigged";
+                        break;
+                    case "TvRigged":
+                        spawn = Instantiate(TvRigged, new Vector3(float.Parse(tokens[1]), float.Parse(tokens[2]), float.Parse(tokens[3])),
+                            Quaternion.Euler(TvRigged.transform.rotation.x + float.Parse(tokens[4]), TvRigged.transform.rotation.y + float.Parse(tokens[5]),
+                            TvRigged.transform.rotation.z + float.Parse(tokens[6])));
+                        spawn.name = "TvRigged";
+                        break;
+                    case "whiteboard":
+                        Instantiate(whiteboard, new Vector3(float.Parse(tokens[1]), float.Parse(tokens[2]), float.Parse(tokens[3])),
+                            Quaternion.Euler(DeskRigged.transform.rotation.x + float.Parse(tokens[4]), DeskRigged.transform.rotation.y + float.Parse(tokens[5]),
+                            DeskRigged.transform.rotation.z + float.Parse(tokens[6])));
+                        break;
+                }
+
+            }
+        }
+        catch { }
     }
 }

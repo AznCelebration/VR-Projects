@@ -116,9 +116,10 @@ public class ControllerScript : MonoBehaviour {
             }
         }
         
-        if(OVRInput.GetDown(OVRInput.Button.PrimaryThumbstick, Control)) {
+        if(OVRInput.GetDown(OVRInput.Button.PrimaryThumbstick, Control) && mode == "tele") {
             hands.SetActive(true);
             this.gameObject.SetActive(false);
+            mode = "hands";
         }
 
         if (sucking) {
