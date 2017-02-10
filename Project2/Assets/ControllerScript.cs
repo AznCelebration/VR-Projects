@@ -71,6 +71,7 @@ public class ControllerScript : MonoBehaviour {
                         else {
                             int i = currObj.transform.childCount;
                             for(int j = 0; j < i; j++) {
+                                currObj.transform.GetChild(0).gameObject.layer = 1;
                                 currObj.transform.GetChild(0).SetParent(null);
                             }
                             boardMove = false;

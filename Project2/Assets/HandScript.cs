@@ -34,7 +34,7 @@ public class HandScript : MonoBehaviour {
                         closest = i;
                     }
                 }
-                if(hits[closest].transform.gameObject.tag == "Model") {
+                if(hits[closest].transform.gameObject.tag == "Model" || hits[closest].transform.gameObject.tag == "Board") {
                     holding = hits[closest].transform.gameObject;
                     holding.transform.SetParent(hand.transform);
                     holding.GetComponent<Rigidbody>().isKinematic = true;
@@ -44,8 +44,28 @@ public class HandScript : MonoBehaviour {
         if (OVRInput.GetUp(OVRInput.Button.PrimaryHandTrigger, Controller)) {
             if (holding != null && holding.transform.parent == hand.transform) {
                 holding.transform.SetParent(null);
-                holding.GetComponent<Rigidbody>().isKinematic = false;
-                holding.GetComponent<Rigidbody>().velocity = OVRInput.GetLocalControllerVelocity(Controller);
+                if(holding.name != "WhiteBoard") {
+                    holding.GetComponent<Rigidbody>().isKinematic = false;
+                    holding.GetComponent<Rigidbody>().velocity = OVRInput.GetLocalControllerVelocity(Controller);
+                }
+                else {
+                    RaycastHit[] hits;
+                    hits = Physics.SphereCastAll(hand.transform.position, 0.01f, hand.transform.forward, 0f);
+                    if (hits.Length > 0) {
+                        int closest = 0;
+                        for (int i = 0; i < hits.Length; i++) {
+                            if (hits[i].distance < hits[closest].distance && hits[i].collider.transform.root.name == "Walls") {
+                                closest = i;
+                            }
+                        }
+                        holding.transform.position = hits[closest].point;
+                        holding.transform.up = hits[closest].normal.normalized;
+                    }
+                    else {
+                        holding.GetComponent<Rigidbody>().isKinematic = false;
+                        holding.GetComponent<Rigidbody>().velocity = OVRInput.GetLocalControllerVelocity(Controller);
+                    }
+                }
                 holding = null;
             }
         }
