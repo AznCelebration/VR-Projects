@@ -26,6 +26,7 @@ public class ControllerScript : MonoBehaviour {
     private Vector3 toScale;
     private Vector3 toGroupScale;
     private Dictionary<int, GameObject> hits;
+    private List<GameObject> childsOfGameobject = new List<GameObject>();
     // Use this for initialization
     void Start() {
         mode = "tele";
@@ -67,32 +68,51 @@ public class ControllerScript : MonoBehaviour {
             else if (hit.collider.gameObject.tag == "Moveable") {
                 if (OVRInput.Get(OVRInput.Button.PrimaryHandTrigger, Control) && mode != "move" && mode != "spawn") {
                     hits[hit.collider.gameObject.transform.parent.parent.gameObject.GetHashCode()] = hit.collider.gameObject.transform.parent.parent.gameObject;
+                    GetAllChilds(hit.collider.gameObject.transform.parent.parent.gameObject);
+                    foreach (GameObject child in childsOfGameobject) {
+                        if(child.GetComponent<Renderer>() != null) {
+                            foreach(Material mat in child.GetComponent<Renderer>().materials) {
+                                mat.shader = Shader.Find("HighlightShader");
+                            }
+                        }
+                    }
+                    childsOfGameobject.Clear();
                 }
-                if (OVRInput.GetUp(OVRInput.Button.PrimaryHandTrigger, Control) && mode != "move" && mode != "spawn") {
-                    mode = "move";
-                    sucking = true;
-                    if (currObj != null) {
-                        Destroy(currObj);
-                    }
-                    GameObject parent = new GameObject();
-                    Vector3 center = new Vector3(0, 0, 0);
-                    foreach (KeyValuePair<int, GameObject> entry in hits) {
-                        entry.Value.GetComponent<Rigidbody>().isKinematic = true;
-                        entry.Value.GetComponent<Rigidbody>().detectCollisions = false;
-                        center += entry.Value.transform.position;
-                    }
-                        
-                    center /= hits.Count;
-                    parent.transform.position = center;
-                    toGroupScale = parent.transform.localScale * 0.1f;
+                
+            }
+            if (OVRInput.GetUp(OVRInput.Button.PrimaryHandTrigger, Control) && mode != "move" && mode != "spawn") {
+                mode = "move";
+                sucking = true;
+                if (currObj != null) {
+                    Destroy(currObj);
+                }
+                GameObject parent = new GameObject();
+                Vector3 center = new Vector3(0, 0, 0);
+                foreach (KeyValuePair<int, GameObject> entry in hits) {
+                    entry.Value.GetComponent<Rigidbody>().isKinematic = true;
+                    entry.Value.GetComponent<Rigidbody>().detectCollisions = false;
+                    center += entry.Value.transform.position;
+                }
 
-                    foreach (KeyValuePair<int, GameObject> entry in hits) {
-                        entry.Value.transform.SetParent(parent.transform);
+                center /= hits.Count;
+                parent.transform.position = center;
+                toGroupScale = parent.transform.localScale * 0.1f;
+
+                foreach (KeyValuePair<int, GameObject> entry in hits) {
+                    entry.Value.transform.SetParent(parent.transform);
+                    GetAllChilds(entry.Value);
+                    foreach (GameObject child in childsOfGameobject) {
+                        if (child.GetComponent<Renderer>() != null) {
+                            foreach (Material mat in child.GetComponent<Renderer>().materials) {
+                                mat.shader = Shader.Find("Diffuse");
+                            }
+                        }
                     }
-                    currObj = parent;
-                    parent.name = "Grouped";
-                    hits.Clear();
+                    childsOfGameobject.Clear();
                 }
+                currObj = parent;
+                parent.name = "Grouped";
+                hits.Clear();
             }
         }
         
@@ -316,5 +336,18 @@ public class ControllerScript : MonoBehaviour {
         if (currObj != null && !throwing && !sucking) {
             currObj.transform.position = Controller.transform.position + Controller.transform.up.normalized * 0.1f;
         }
+    }
+
+    private List<GameObject> GetAllChilds(GameObject transformForSearch)
+    {
+        List<GameObject> getedChilds = new List<GameObject>();
+
+        foreach (Transform trans in transformForSearch.transform)
+        {
+            //Debug.Log (trans.name);
+            GetAllChilds(trans.gameObject);
+            childsOfGameobject.Add(trans.gameObject);
+        }
+        return getedChilds;
     }
 }
