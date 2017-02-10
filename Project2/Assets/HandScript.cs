@@ -14,6 +14,7 @@ public class HandScript : MonoBehaviour {
     public GameObject TvRigged;
     public GameObject DeskRigged;
     public GameObject whiteboard;
+    public GameObject ControllerObj;
 
     private GameObject holding;
     // Use this for initialization
@@ -33,11 +34,12 @@ public class HandScript : MonoBehaviour {
                         closest = i;
                     }
                 }
-                holding = hits[closest].transform.gameObject;
-                holding.transform.SetParent(hand.transform);
-                holding.GetComponent<Rigidbody>().isKinematic = true;
+                if(hits[closest].transform.gameObject.tag == "Model") {
+                    holding = hits[closest].transform.gameObject;
+                    holding.transform.SetParent(hand.transform);
+                    holding.GetComponent<Rigidbody>().isKinematic = true;
+                }
             }
-
         }
         if (OVRInput.GetUp(OVRInput.Button.PrimaryHandTrigger, Controller)) {
             if (holding != null && holding.transform.parent == hand.transform) {
@@ -50,10 +52,10 @@ public class HandScript : MonoBehaviour {
         if (OVRInput.GetDown(OVRInput.Button.PrimaryThumbstick, Controller)) {
             touch.SetActive(true);
             this.gameObject.SetActive(false);
-            touch.GetComponent<ControllerScript>().mode = "tele";
+            ControllerObj.GetComponent<ControllerScript>().mode = "tele";
         }
         if(OVRInput.Get(OVRInput.Axis1D.PrimaryIndexTrigger, Controller) > 0) {
-            player.transform.position += centereye.transform.forward.normalized * 0.01f * OVRInput.Get(OVRInput.Axis1D.PrimaryIndexTrigger, Controller);
+            player.transform.position += centereye.transform.forward.normalized * OVRInput.Get(OVRInput.Axis1D.PrimaryIndexTrigger, Controller) * Time.deltaTime;
         }
         if (OVRInput.GetDown(OVRInput.Button.One, Controller)) {
             Save();

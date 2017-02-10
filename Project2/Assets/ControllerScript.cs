@@ -23,11 +23,13 @@ public class ControllerScript : MonoBehaviour {
     private bool respawn;
     private Vector3 toSpawn;
     private bool sucking;
+    private bool boardMove = false;
     private Vector3 toScale;
     private Vector3 toGroupScale;
     private Dictionary<int, GameObject> hits;
     private List<GameObject> childsOfGameobject = new List<GameObject>();
     private RaycastHit boardHit;
+    private string groupType = "no";
     // Use this for initialization
     void Start() {
         mode = "tele";
@@ -41,16 +43,38 @@ public class ControllerScript : MonoBehaviour {
 
     // Update is called once per frame
     void Update() {
+        if (boardMove) {
+            int layerMask = 1 << 3;
+            layerMask = ~layerMask;
+            Ray bray = new Ray(Controller.transform.position, Controller.transform.forward);
+            RaycastHit bhit;
+            if (Physics.Raycast(bray, out bhit, Mathf.Infinity, layerMask)) {
+                if (bhit.collider.gameObject.transform.root.name == "Walls") {
+                    currObj.transform.position = bhit.point;
+                    currObj.transform.forward = bhit.normal.normalized;
+                }
+            }
+            /*float x = OVRInput.Get(OVRInput.Axis2D.PrimaryThumbstick, Control).x * 1f;
+            currObj.transform.Rotate(-currObj.transform.forward, x);*/
+        }
+
         Ray ray = new Ray(Controller.transform.position, Controller.transform.forward);
         if (Physics.Raycast(ray, out hit, Mathf.Infinity)) {
-            if (hit.collider.gameObject.transform.root.name == "Walls") {
+            if ((hit.collider.gameObject.transform.root.name == "Walls" && currObj != null && currObj.name == "WhiteBoard") || boardMove) {
                 if (OVRInput.GetDown(OVRInput.Button.PrimaryIndexTrigger, Control)) {
                     if (currObj != null) {
-                        print(currObj.name);
                         if (currObj.name == "WhiteBoard") {
                             throwing = true;
                             toSpawn = hit.point;
                             boardHit = hit;
+                        }
+                        else {
+                            int i = currObj.transform.childCount;
+                            for(int j = 0; j < i; j++) {
+                                currObj.transform.GetChild(0).SetParent(null);
+                            }
+                            boardMove = false;
+                            mode = "tele";
                         }
                     }
                 }
@@ -60,7 +84,7 @@ public class ControllerScript : MonoBehaviour {
                     if (mode == "tele") {
                         player.transform.position = new Vector3(hit.point.x, 1.2f, hit.point.z);
                     }
-                    else if ((mode == "spawn" || mode == "move")) {
+                    else if ((mode == "spawn" || mode == "move") && currObj.name != "WhiteBoard") {
                         throwing = true;
                         toSpawn = hit.point;
                         boardHit = hit;
@@ -78,60 +102,87 @@ public class ControllerScript : MonoBehaviour {
                     }
                 }
             }
-           
+
             
             else if (hit.collider.gameObject.tag == "Moveable") {
                 if (OVRInput.Get(OVRInput.Button.PrimaryHandTrigger, Control) && mode != "move" && mode != "spawn") {
-                    hits[hit.collider.gameObject.transform.parent.parent.gameObject.GetHashCode()] = hit.collider.gameObject.transform.parent.parent.gameObject;
-                    GetAllChilds(hit.collider.gameObject.transform.parent.parent.gameObject);
-                    foreach (GameObject child in childsOfGameobject) {
-                        if(child.GetComponent<Renderer>() != null) {
-                            foreach(Material mat in child.GetComponent<Renderer>().materials) {
-                                mat.shader = Shader.Find("HighlightShader");
-                            }
+                    if(groupType == "no" ) {
+                        if (hit.collider.gameObject.transform.parent.parent.name == "WhiteBoard") {
+                            groupType = "white";
+                        }
+                        else {
+                            groupType = "model";
                         }
                     }
-                    childsOfGameobject.Clear();
+                    if((groupType == "model" && hit.collider.gameObject.transform.parent.parent.tag == "Model") || 
+                        (groupType == "white" && hit.collider.gameObject.transform.parent.parent.name == "WhiteBoard")) {
+                        hits[hit.collider.gameObject.transform.parent.parent.gameObject.GetHashCode()] = hit.collider.gameObject.transform.parent.parent.gameObject;
+                        GetAllChilds(hit.collider.gameObject.transform.parent.parent.gameObject);
+                        foreach (GameObject child in childsOfGameobject) {
+                            if (child.GetComponent<Renderer>() != null) {
+                                foreach (Material mat in child.GetComponent<Renderer>().materials) {
+                                    mat.shader = Shader.Find("HighlightShader");
+                                }
+                            }
+                        }
+                        childsOfGameobject.Clear();
+                    }
+                    
                 }
                 
             }
+
             if (OVRInput.GetUp(OVRInput.Button.PrimaryHandTrigger, Control) && mode != "move" && mode != "spawn") {
-                mode = "move";
-                sucking = true;
-                if (currObj != null) {
-                    Destroy(currObj);
-                }
-                GameObject parent = new GameObject();
-                Vector3 center = new Vector3(0, 0, 0);
-                foreach (KeyValuePair<int, GameObject> entry in hits) {
-                    entry.Value.GetComponent<Rigidbody>().isKinematic = true;
-                    entry.Value.GetComponent<Rigidbody>().detectCollisions = false;
-                    center += entry.Value.transform.position;
-                }
-
-                center /= hits.Count;
-                parent.transform.position = center;
-                toGroupScale = parent.transform.localScale * 0.1f;
-
-                foreach (KeyValuePair<int, GameObject> entry in hits) {
-                    entry.Value.transform.SetParent(parent.transform);
-                    GetAllChilds(entry.Value);
-                    foreach (GameObject child in childsOfGameobject) {
-                        if (child.GetComponent<Renderer>() != null) {
-                            foreach (Material mat in child.GetComponent<Renderer>().materials) {
-                                mat.shader = Shader.Find("Diffuse");
-                            }
+                if(hits.Count != 0) {
+                    mode = "move";
+                    if(groupType == "model") {
+                        sucking = true;
+                    }
+                    else {
+                        boardMove = true;
+                    }
+                    if (currObj != null) {
+                        Destroy(currObj);
+                    }
+                    GameObject parent = new GameObject();
+                    Vector3 center = new Vector3(0, 0, 0);
+                    foreach (KeyValuePair<int, GameObject> entry in hits) {
+                        entry.Value.GetComponent<Rigidbody>().isKinematic = true;
+                        entry.Value.GetComponent<Rigidbody>().detectCollisions = false;
+                        center += entry.Value.transform.position;
+                        if(entry.Value.name == "WhiteBoard") {
+                            entry.Value.layer = 3;
                         }
                     }
-                    childsOfGameobject.Clear();
+
+                    center /= hits.Count;
+                    parent.transform.position = center;
+                    if(groupType == "white") {
+                        parent.transform.forward = hit.normal;
+                    }
+                    toGroupScale = parent.transform.localScale * 0.1f;
+
+                    foreach (KeyValuePair<int, GameObject> entry in hits) {
+                        entry.Value.transform.SetParent(parent.transform);
+                        GetAllChilds(entry.Value);
+                        foreach (GameObject child in childsOfGameobject) {
+                            if (child.GetComponent<Renderer>() != null) {
+                                foreach (Material mat in child.GetComponent<Renderer>().materials) {
+                                    mat.shader = Shader.Find("Diffuse");
+                                }
+                            }
+                        }
+                        childsOfGameobject.Clear();
+                    }
+                    currObj = parent;
+                    parent.name = "Grouped";
+                    hits.Clear();
+                    groupType = "no";
                 }
-                currObj = parent;
-                parent.name = "Grouped";
-                hits.Clear();
             }
         }
-        
-        if(OVRInput.GetDown(OVRInput.Button.PrimaryThumbstick, Control) && mode == "tele") {
+
+        if (OVRInput.GetDown(OVRInput.Button.PrimaryThumbstick, Control) && mode == "tele") {
             hands.SetActive(true);
             this.gameObject.SetActive(false);
             mode = "hands";
@@ -160,8 +211,9 @@ public class ControllerScript : MonoBehaviour {
                     currObj.transform.localScale = Vector3.MoveTowards(currObj.transform.localScale, toScale, 0.5f);
                     currObj.transform.position = Vector3.MoveTowards(currObj.transform.position, toPos, 0.3f);
                     break;
-                case "whiteboard":
+                case "WhiteBoard":
                     currObj.transform.localScale = Vector3.MoveTowards(currObj.transform.localScale, toScale, 0.3f);
+                    currObj.transform.position = Vector3.MoveTowards(currObj.transform.position, toPos, 0.3f);
                     break;
                 case "Grouped":
                     currObj.transform.localScale = Vector3.MoveTowards(currObj.transform.localScale, toGroupScale, 0.5f);
@@ -173,7 +225,7 @@ public class ControllerScript : MonoBehaviour {
                 sucking = false;
             }
         }
-        
+
         if (throwing) {
             Vector3 toPos = new Vector3(0,0,0);
             Vector3 toScale = new Vector3(0, 0, 0);
@@ -215,18 +267,23 @@ public class ControllerScript : MonoBehaviour {
                     currObj.transform.localScale = Vector3.MoveTowards(currObj.transform.localScale, TvRigged.transform.localScale, 1f);
                     currObj.transform.position = Vector3.MoveTowards(currObj.transform.position, new Vector3(toSpawn.x, 1f, toSpawn.z), 0.3f);
                     break;
-                case "whiteboard":
+                case "WhiteBoard":
                     toPos = new Vector3(toSpawn.x, toSpawn.y, toSpawn.z);
-                    currObj.transform.position = toPos;
+                    toScale = whiteboard.transform.localScale;
                     currObj.transform.localScale = Vector3.MoveTowards(currObj.transform.localScale, whiteboard.transform.localScale, 0.1f);
-                    currObj.transform.LookAt(boardHit.normal);
+                    currObj.transform.up = -boardHit.normal.normalized;
+                    currObj.transform.position = toPos;
                     break;
                 case "Grouped":
                     toPos = new Vector3(toSpawn.x, 1.2f, toSpawn.z);
                     toScale = toGroupScale * 10;
                     //currObj.transform.position = Vector3.MoveTowards(currObj.transform.position, toPos, 0.1f);
-                    currObj.transform.position = toPos;
                     currObj.transform.localScale = Vector3.MoveTowards(currObj.transform.localScale, toScale, 1f);
+                    /*if(currObj.transform.GetChild(0).name == "WhiteBoard") {
+                        toPos = new Vector3(toSpawn.x, toSpawn.y, toSpawn.z);
+                        currObj.transform.forward = boardHit.normal;
+                    }*/
+                    currObj.transform.position = toPos;
                     break;
             }
             if (currObj.transform.position == toPos && currObj.transform.localScale == toScale ) {
@@ -234,7 +291,7 @@ public class ControllerScript : MonoBehaviour {
                 if (mode != "move") {
                     switch (spawn) {
                         case "DeskRigged":
-                            spawn = "whiteboard";
+                            spawn = "WhiteBoard";
                             break;
                         case "ChairRigged":
                             spawn = "DeskRigged";
@@ -248,13 +305,16 @@ public class ControllerScript : MonoBehaviour {
                         case "TvRigged":
                             spawn = "LockerRigged";
                             break;
-                        case "whiteboard":
+                        case "WhiteBoard":
                             spawn = "TvRigged";
                             break;
                     }
                     respawn = true;
-                    currObj.GetComponent<Rigidbody>().isKinematic = false;
-                    currObj.GetComponent<Rigidbody>().detectCollisions = true;
+                    if(currObj.name != "WhiteBoard") {
+                        currObj.GetComponent<Rigidbody>().isKinematic = false;
+                        currObj.GetComponent<Rigidbody>().detectCollisions = true;
+                    }
+                    
                     currObj = null;
                 }
                 else if (mode == "move") {
@@ -264,6 +324,11 @@ public class ControllerScript : MonoBehaviour {
                     for (int i = 0; i < childCount; i++) {
                         currObj.transform.GetChild(0).GetComponent<Rigidbody>().isKinematic = false;
                         currObj.transform.GetChild(0).GetComponent<Rigidbody>().detectCollisions = true;
+                        /*if(currObj.transform.GetChild(0).name == "WhiteBoard") {
+                            currObj.transform.GetChild(0).localRotation = Quaternion.identity;
+                            currObj.transform.GetChild(0).up = -boardHit.normal;
+                            currObj.transform.GetChild(0).GetComponent<Rigidbody>().isKinematic = true;
+                        }*/
                         currObj.transform.GetChild(0).SetParent(null);
                     }
                     Destroy(currObj);
@@ -272,7 +337,7 @@ public class ControllerScript : MonoBehaviour {
             }
         }
         
-        if (mode == "move") {
+        if (mode == "move" && !boardMove) {
             float y = OVRInput.Get(OVRInput.Axis2D.PrimaryThumbstick, Control).y * 1f;
             float x = -OVRInput.Get(OVRInput.Axis2D.PrimaryThumbstick, Control).x * 1f;
             currObj.transform.Rotate(new Vector3(0, x, 0), Space.World);
@@ -311,12 +376,14 @@ public class ControllerScript : MonoBehaviour {
                         currObj.transform.localScale *= 0.1f;
                         break;
                     case "TvRigged":
-                        spawn = "whiteboard";
+                        spawn = "WhiteBoard";
                         currObj = Instantiate(whiteboard, Controller.transform.position + Controller.transform.up.normalized * 0.1f, whiteboard.transform.rotation);
                         currObj.name = "WhiteBoard";
+                        currObj.SetActive(false);
+                        currObj.SetActive(true);
                         currObj.transform.localScale *= 0.1f;
                         break;
-                    case "whiteboard":
+                    case "WhiteBoard":
                         spawn = "DeskRigged";
                         currObj = Instantiate(DeskRigged, Controller.transform.position + Controller.transform.up.normalized * 0.1f, DeskRigged.transform.rotation);
                         currObj.name = "DeskRigged";
@@ -331,7 +398,7 @@ public class ControllerScript : MonoBehaviour {
             currObj.transform.Rotate(new Vector3(0,x,0),Space.World);
             currObj.transform.Rotate(Vector3.Cross(new Vector3(0,1,0), new Vector3(Controller.transform.forward.x,0,Controller.transform.forward.z).normalized), y, Space.World);
 
-            if(OVRInput.GetDown(OVRInput.Button.Two, Control)) {
+            if(OVRInput.GetDown(OVRInput.Button.Two, Control) && !throwing) {
                 mode = "tele";
                 Destroy(currObj);
                 currObj = null;
@@ -352,7 +419,7 @@ public class ControllerScript : MonoBehaviour {
         Controller.GetComponent<LineRenderer>().SetPosition(0, Controller.transform.position - Controller.transform.up.normalized * 0.02f);
         Controller.GetComponent<LineRenderer>().SetPosition(1, hit.point);
 
-        if (currObj != null && !throwing && !sucking) {
+        if (currObj != null && !throwing && !sucking && !boardMove) {
             currObj.transform.position = Controller.transform.position + Controller.transform.up.normalized * 0.1f;
         }
     }
