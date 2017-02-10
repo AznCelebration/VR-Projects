@@ -50,8 +50,16 @@ public class ControllerScript : MonoBehaviour {
             RaycastHit bhit;
             if (Physics.Raycast(bray, out bhit, Mathf.Infinity, layerMask)) {
                 if (bhit.collider.gameObject.transform.root.name == "Walls") {
-                    currObj.transform.position = bhit.point;
-                    currObj.transform.forward = bhit.normal.normalized;
+                    if(currObj.transform.childCount != 1)
+                    {
+                        currObj.transform.position = bhit.point;
+                        currObj.transform.forward = bhit.normal.normalized;
+                    }
+                    else {
+                        currObj.transform.position = bhit.point;
+                        currObj.transform.forward = bhit.normal.normalized;
+                    }
+                    
                 }
             }
             /*float x = OVRInput.Get(OVRInput.Axis2D.PrimaryThumbstick, Control).x * 1f;

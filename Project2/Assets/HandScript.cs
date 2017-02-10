@@ -89,7 +89,7 @@ public class HandScript : MonoBehaviour {
         GameObject[] all = GameObject.FindGameObjectsWithTag("Model");
         string toWrite = "";
         foreach(GameObject model in all) {
-            toWrite += model.name;
+            toWrite += model.name.Trim();
             toWrite += " ";
             toWrite += model.transform.position.x;
             toWrite += " ";
@@ -116,11 +116,16 @@ public class HandScript : MonoBehaviour {
             string[] lines = System.IO.File.ReadAllLines(@"D:/SavedFurniture.txt");
             GameObject spawn;
             foreach (string line in lines) {
-                string[] tokens = line.Split(null);
+                print(line);
+                string[] tokens = line.Split();
+                foreach (string x in tokens)
+                {
+                    print(x);
+                }
                 switch (tokens[0]) {
                     case "DeskRigged":
                         spawn = Instantiate(DeskRigged, new Vector3(float.Parse(tokens[1]), float.Parse(tokens[2]), float.Parse(tokens[3])),
-                            Quaternion.Euler(float.Parse(tokens[4]),float.Parse(tokens[5]),
+                            Quaternion.Euler(float.Parse(tokens[4]), float.Parse(tokens[5]),
                             float.Parse(tokens[6])));
                         spawn.name = "DeskRigged";
                         break;
@@ -148,15 +153,16 @@ public class HandScript : MonoBehaviour {
                             TvRigged.transform.rotation.z + float.Parse(tokens[6])));
                         spawn.name = "TvRigged";
                         break;
-                    case "whiteboard":
-                        Instantiate(whiteboard, new Vector3(float.Parse(tokens[1]), float.Parse(tokens[2]), float.Parse(tokens[3])),
+                    case "WhiteBoard":
+                        spawn = Instantiate(whiteboard, new Vector3(float.Parse(tokens[1]), float.Parse(tokens[2]), float.Parse(tokens[3])),
                             Quaternion.Euler(DeskRigged.transform.rotation.x + float.Parse(tokens[4]), DeskRigged.transform.rotation.y + float.Parse(tokens[5]),
                             DeskRigged.transform.rotation.z + float.Parse(tokens[6])));
+                        spawn.name = "WhiteBoard";
                         break;
                 }
 
             }
-        }
-        catch { }
+       }
+       catch { print("Load failed");  } ;
     }
 }
