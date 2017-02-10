@@ -50,6 +50,7 @@ public class HandScript : MonoBehaviour {
         if (OVRInput.GetDown(OVRInput.Button.PrimaryThumbstick, Controller)) {
             touch.SetActive(true);
             this.gameObject.SetActive(false);
+            touch.GetComponent<ControllerScript>().mode = "tele";
         }
         if(OVRInput.Get(OVRInput.Axis1D.PrimaryIndexTrigger, Controller) > 0) {
             player.transform.position += centereye.transform.forward.normalized * 0.01f * OVRInput.Get(OVRInput.Axis1D.PrimaryIndexTrigger, Controller);

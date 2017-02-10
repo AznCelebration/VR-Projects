@@ -14,8 +14,8 @@ public class ControllerScript : MonoBehaviour {
     public GameObject DeskRigged;
     public GameObject whiteboard;
     public GameObject hands;
+    public string mode;
 
-    private string mode;
     private RaycastHit hit;
     private GameObject currObj;
     private string spawn;
@@ -27,6 +27,7 @@ public class ControllerScript : MonoBehaviour {
     private Vector3 toGroupScale;
     private Dictionary<int, GameObject> hits;
     private List<GameObject> childsOfGameobject = new List<GameObject>();
+    private RaycastHit boardHit;
     // Use this for initialization
     void Start() {
         mode = "tele";
@@ -42,14 +43,27 @@ public class ControllerScript : MonoBehaviour {
     void Update() {
         Ray ray = new Ray(Controller.transform.position, Controller.transform.forward);
         if (Physics.Raycast(ray, out hit, Mathf.Infinity)) {
-            if (hit.collider.gameObject.name == "Floor") {
+            if (hit.collider.gameObject.transform.root.name == "Walls") {
+                if (OVRInput.GetDown(OVRInput.Button.PrimaryIndexTrigger, Control)) {
+                    if (currObj != null) {
+                        print(currObj.name);
+                        if (currObj.name == "WhiteBoard") {
+                            throwing = true;
+                            toSpawn = hit.point;
+                            boardHit = hit;
+                        }
+                    }
+                }
+            }
+            else if (hit.collider.gameObject.name == "Floor") {
                 if (OVRInput.GetDown(OVRInput.Button.PrimaryIndexTrigger, Control)) {
                     if (mode == "tele") {
                         player.transform.position = new Vector3(hit.point.x, 1.2f, hit.point.z);
                     }
-                    else if (mode == "spawn" || mode == "move") {
+                    else if ((mode == "spawn" || mode == "move")) {
                         throwing = true;
                         toSpawn = hit.point;
+                        boardHit = hit;
                         if (currObj.name == "Grouped") {
                             foreach (Transform child in currObj.transform) {
                                 child.gameObject.GetComponent<Rigidbody>().isKinematic = true;
@@ -64,6 +78,7 @@ public class ControllerScript : MonoBehaviour {
                     }
                 }
             }
+           
             
             else if (hit.collider.gameObject.tag == "Moveable") {
                 if (OVRInput.Get(OVRInput.Button.PrimaryHandTrigger, Control) && mode != "move" && mode != "spawn") {
@@ -201,7 +216,10 @@ public class ControllerScript : MonoBehaviour {
                     currObj.transform.position = Vector3.MoveTowards(currObj.transform.position, new Vector3(toSpawn.x, 1f, toSpawn.z), 0.3f);
                     break;
                 case "whiteboard":
+                    toPos = new Vector3(toSpawn.x, toSpawn.y, toSpawn.z);
+                    currObj.transform.position = toPos;
                     currObj.transform.localScale = Vector3.MoveTowards(currObj.transform.localScale, whiteboard.transform.localScale, 0.1f);
+                    currObj.transform.LookAt(boardHit.normal);
                     break;
                 case "Grouped":
                     toPos = new Vector3(toSpawn.x, 1.2f, toSpawn.z);
@@ -231,7 +249,7 @@ public class ControllerScript : MonoBehaviour {
                             spawn = "LockerRigged";
                             break;
                         case "whiteboard":
-                            spawn = "DeskRigged";
+                            spawn = "TvRigged";
                             break;
                     }
                     respawn = true;
