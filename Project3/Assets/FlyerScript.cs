@@ -22,6 +22,7 @@ public class FlyerScript : MonoBehaviour {
     private float time;
     private Vector3 lastCheck;
     private bool crashed = false;
+    private bool finish = false;
     // Use this for initialization
     void Start() {
         direction = new Vector3(1, 0, 0);
@@ -34,8 +35,16 @@ public class FlyerScript : MonoBehaviour {
         frame = provider.CurrentFrame;
         if (frame.Hands.Count > 0) {
             List<Hand> hands = frame.Hands;
-            Hand firstHand = hands[0];
-            direction = firstHand.Direction.ToVector3();
+            Hand left = null;
+            if(hands[0].IsLeft) {
+                left = hands[0];
+            }
+            else if(hands.Count > 1){
+                left = hands[1];
+            }
+            if(left != null) {
+                direction = left.Direction.ToVector3();
+            }
         }
         RaycastHit[] hits;
         hits = Physics.SphereCastAll(cam.transform.position, 0.1f, direction.normalized, 0f);
@@ -46,7 +55,6 @@ public class FlyerScript : MonoBehaviour {
                     closest = i;
                 }
             }
-            print(hits[closest].transform.gameObject.name);
             if (hits[closest].transform.gameObject.tag == "Checkpoint") {
                 pointController.SendMessage("newPoint", hits[closest].transform.gameObject);
                 string name = hits[closest].transform.gameObject.name;
@@ -61,20 +69,46 @@ public class FlyerScript : MonoBehaviour {
                 StartCoroutine(Respawn());
             }
         }
-        time += Time.deltaTime;
+        if(!finish) {
+            time += Time.deltaTime;
 
-        var minutes = time / 60; //Divide the guiTime by sixty to get the minutes.
-        var seconds = time % 60;//Use the euclidean division for the seconds.
-        var fraction = (time * 100) % 100;
+            var minutes = time / 60; //Divide the guiTime by sixty to get the minutes.
+            var seconds = time % 60;//Use the euclidean division for the seconds.
+            var fraction = (time * 100) % 100;
 
-        //update the label value
-        timer.text = string.Format("{0:00} : {1:00} : {2:000}", minutes, seconds, fraction);
+            //update the label value
+            timer.text = string.Format("{0:00} : {1:00} : {2:000}", minutes, seconds, fraction);
+        }
     }
 
     private void LateUpdate() {
-        if (frame.Hands.Count > 0 && !start && !crashed) {
+        if (frame.Hands.Count > 0 && !start && !crashed && !finish) {
             //player.transform.LookAt(player.transform.position + direction.normalized, player.transform.up);
-            player.transform.position += direction.normalized * 0.5f;
+            if(frame.Hands.Count > 1) {
+                if(frame.Hands[0].IsRight) {
+                    if(frame.Hands[0].GrabStrength < 0.6f) {
+                        player.transform.position += direction.normalized * 2f;
+                    }
+                    else if(frame.Hands[0].GrabStrength > 0.6f && frame.Hands[1].GrabStrength > 0.6f) {
+                    }
+                    else {
+                        player.transform.position += direction.normalized * 0.5f;
+                    }
+                }
+                else {
+                    if (frame.Hands[1].GrabStrength < 0.6f) {
+                        player.transform.position += direction.normalized * 2f;
+                    }
+                    else if (frame.Hands[0].GrabStrength > 0.6f && frame.Hands[1].GrabStrength > 0.6f) {
+                    }
+                    else {
+                        player.transform.position += direction.normalized * 0.5f;
+                    }
+                }
+            }
+            else if(frame.Hands[0].IsLeft){
+                player.transform.position += direction.normalized * 0.5f;
+            }
         }
     }
     IEnumerator Respawn() {
@@ -115,5 +149,10 @@ public class FlyerScript : MonoBehaviour {
         count.enabled = true;
         yield return new WaitForSeconds(1f);
         count.enabled = false;
+    }
+
+    void End() {
+        finish = true;
+        count.text = "Race finished";
     }
 }

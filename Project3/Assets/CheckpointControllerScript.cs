@@ -6,10 +6,14 @@ using System;
 public class CheckpointControllerScript : MonoBehaviour {
     public GameObject player;
     public GameObject checkpoint;
+    public GameObject compass;
+    public GameObject dist;
+    public GameObject cam;
 
     private bool[] checkpoints;
     private GameObject currCheck;
     private int currPoint;
+    private bool finish = false;
 	// Use this for initialization
 	void Start () {
         int count = 0;
@@ -39,10 +43,38 @@ public class CheckpointControllerScript : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
-        this.gameObject.transform.LookAt(currCheck.transform.position);
-        var main = this.gameObject.GetComponent<ParticleSystem>().main;
-        main.startSpeed = Math.Abs(8 - Vector3.Distance(currCheck.transform.position, this.transform.position) * 0.001f);
-
+        bool flag = true;
+        foreach (bool point in checkpoints) {
+            if (!point) {
+                flag = false;
+                break;
+            }
+        }
+        if (flag) {
+            player.SendMessage("End");
+            finish = true;
+            this.gameObject.GetComponent<ParticleSystem>().Stop();
+            this.gameObject.GetComponent<ParticleSystem>().Clear();
+        }
+        if(!finish) {
+            this.gameObject.transform.LookAt(currCheck.transform.position);
+            var main = this.gameObject.GetComponent<ParticleSystem>().main;
+            main.startSpeed = Math.Abs(8 - Vector3.Distance(currCheck.transform.position, this.transform.position) * 0.001f);
+            Vector3 camForward = new Vector3(cam.transform.forward.x, 0, cam.transform.forward.z);
+            Vector3 check = currCheck.transform.position - player.transform.position;
+            check.y = 0;
+            Vector3 referenceRight = Vector3.Cross(Vector3.up, camForward);
+            float angle = Vector3.Angle(check, camForward);
+            float sign = Mathf.Sign(Vector3.Dot(check, referenceRight));
+            float finalAngle = sign * angle;
+            //if(Vector3.Angle(camForward, check) < 180) {
+                compass.transform.localEulerAngles = new Vector3(0, 0, -finalAngle);
+            /*}
+            else {
+                compass.transform.localEulerAngles = new Vector3(0, 0, Vector3.Angle(camForward, check));
+            }*/
+            //print(compass.transform.eulerAngles.x);
+        }
     }
 
     void newPoint(GameObject Point) {
