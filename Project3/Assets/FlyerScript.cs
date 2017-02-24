@@ -20,6 +20,8 @@ public class FlyerScript : MonoBehaviour {
     private Frame frame;
     private bool start = true;
     private float time;
+    private Vector3 lastCheck;
+    private bool crashed = false;
     // Use this for initialization
     void Start() {
         direction = new Vector3(1, 0, 0);
@@ -36,7 +38,7 @@ public class FlyerScript : MonoBehaviour {
             direction = firstHand.Direction.ToVector3();
         }
         RaycastHit[] hits;
-        hits = Physics.SphereCastAll(cam.transform.position, 0.01f, direction.normalized, 0f);
+        hits = Physics.SphereCastAll(cam.transform.position, 0.1f, direction.normalized, 0f);
         if (hits.Length > 0) {
             int closest = 0;
             for (int i = 0; i < hits.Length; i++) {
@@ -44,9 +46,19 @@ public class FlyerScript : MonoBehaviour {
                     closest = i;
                 }
             }
+            print(hits[closest].transform.gameObject.name);
             if (hits[closest].transform.gameObject.tag == "Checkpoint") {
-                pointController.SendMessage("newPoint", hits[closest].transform.gameObject.name);
+                pointController.SendMessage("newPoint", hits[closest].transform.gameObject);
+                string name = hits[closest].transform.gameObject.name;
+                lastCheck = hits[closest].transform.gameObject.transform.position;
                 Destroy(hits[closest].transform.gameObject);
+                if(name != "0") {
+                    StartCoroutine(Get());
+                }
+                
+            }
+            else if(!crashed){
+                StartCoroutine(Respawn());
             }
         }
         time += Time.deltaTime;
@@ -60,11 +72,30 @@ public class FlyerScript : MonoBehaviour {
     }
 
     private void LateUpdate() {
-        if (frame.Hands.Count > 0 && !start) {
+        if (frame.Hands.Count > 0 && !start && !crashed) {
             //player.transform.LookAt(player.transform.position + direction.normalized, player.transform.up);
             player.transform.position += direction.normalized * 0.5f;
         }
     }
+    IEnumerator Respawn() {
+        timer.enabled = false;
+        crashed = true;
+        count.text = "Crashed: 3";
+        count.enabled = true;
+        yield return new WaitForSeconds(1f);
+        count.text = "Crashed: 2";
+        yield return new WaitForSeconds(1f);
+        count.text = "Crashed: 1";
+        yield return new WaitForSeconds(1f);
+        count.text = "GO";
+        yield return new WaitForSeconds(1f);
+        count.enabled = false;
+        timer.enabled = true;
+        player.transform.position = lastCheck;
+        crashed = false;
+        
+    }
+
     IEnumerator Countdown() {
         yield return new WaitForSeconds(1f);
         count.text = "Countdown: 2";
@@ -77,5 +108,12 @@ public class FlyerScript : MonoBehaviour {
         time = 0f;
         timer.enabled = true;
         start = false;
+    }
+
+    IEnumerator Get() {
+        count.text = "Checkpoint reached";
+        count.enabled = true;
+        yield return new WaitForSeconds(1f);
+        count.enabled = false;
     }
 }

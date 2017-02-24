@@ -652,6 +652,135 @@ ModelImporter:
     4300252: Mesh98_Model
     4300254: Mesh99_Model
     4300256: Mesh9_Group10_Group1_Model
+    6400000: Mesh100_Model
+    6400002: Mesh101_Model
+    6400004: Mesh102_Model
+    6400006: Mesh103_Model
+    6400008: Mesh104_Model
+    6400010: Mesh105_Model
+    6400012: Mesh106_Model
+    6400014: Mesh107_Model
+    6400016: Mesh108_Model
+    6400018: Mesh109_Model
+    6400020: Mesh10_Group11_Group1_Model
+    6400022: Mesh110_Model
+    6400024: Mesh111_Model
+    6400026: Mesh112_Model
+    6400028: Mesh113_Model
+    6400030: Mesh114_Model
+    6400032: Mesh115_Model
+    6400034: Mesh116_Model
+    6400036: Mesh117_Model
+    6400038: Mesh118_Model
+    6400040: Mesh119_Model
+    6400042: Mesh11_Group12_Group1_Model
+    6400044: Mesh120_Model
+    6400046: Mesh121_Model
+    6400048: Mesh122_Model
+    6400050: Mesh123_Model
+    6400052: Mesh124_Model
+    6400054: Mesh125_Model
+    6400056: Mesh126_Model
+    6400058: Mesh127_Model
+    6400060: Mesh128_Model
+    6400062: Mesh129_Model
+    6400064: Mesh12_Group13_Group1_Model
+    6400066: Mesh13_Group14_Group1_Model
+    6400068: Mesh14_Group15_Group1_Model
+    6400070: Mesh15_Group16_Group1_Model
+    6400072: Mesh16_Group17_Group1_Model
+    6400074: Mesh17_Group1_Model
+    6400076: Mesh18_Group1_Model
+    6400078: Mesh19_Model
+    6400080: Mesh1_Group2_Group1_Model
+    6400082: Mesh20_Model
+    6400084: Mesh21_Model
+    6400086: Mesh22_Model
+    6400088: Mesh23_Model
+    6400090: Mesh24_Model
+    6400092: Mesh25_Model
+    6400094: Mesh26_Model
+    6400096: Mesh27_Model
+    6400098: Mesh28_Model
+    6400100: Mesh29_Model
+    6400102: Mesh2_Group3_Group1_Model
+    6400104: Mesh30_Model
+    6400106: Mesh31_Model
+    6400108: Mesh32_Model
+    6400110: Mesh33_Model
+    6400112: Mesh34_Model
+    6400114: Mesh35_Model
+    6400116: Mesh36_Model
+    6400118: Mesh37_Model
+    6400120: Mesh38_Model
+    6400122: Mesh39_Model
+    6400124: Mesh3_Group4_Group1_Model
+    6400126: Mesh40_Model
+    6400128: Mesh41_Model
+    6400130: Mesh42_Model
+    6400132: Mesh43_Model
+    6400134: Mesh44_Model
+    6400136: Mesh45_Model
+    6400138: Mesh46_Model
+    6400140: Mesh47_Model
+    6400142: Mesh48_Model
+    6400144: Mesh49_Model
+    6400146: Mesh4_Group5_Group1_Model
+    6400148: Mesh50_Model
+    6400150: Mesh51_Model
+    6400152: Mesh52_Model
+    6400154: Mesh53_Model
+    6400156: Mesh54_Model
+    6400158: Mesh55_Model
+    6400160: Mesh56_Model
+    6400162: Mesh57_Model
+    6400164: Mesh58_Model
+    6400166: Mesh59_Model
+    6400168: Mesh5_Group6_Group1_Model
+    6400170: Mesh60_Model
+    6400172: Mesh61_Model
+    6400174: Mesh62_Model
+    6400176: Mesh63_Model
+    6400178: Mesh64_Model
+    6400180: Mesh65_Model
+    6400182: Mesh66_Model
+    6400184: Mesh67_Model
+    6400186: Mesh68_Model
+    6400188: Mesh69_Model
+    6400190: Mesh6_Group7_Group1_Model
+    6400192: Mesh70_Model
+    6400194: Mesh71_Model
+    6400196: Mesh72_Model
+    6400198: Mesh73_Model
+    6400200: Mesh74_Model
+    6400202: Mesh75_Model
+    6400204: Mesh76_Model
+    6400206: Mesh77_Model
+    6400208: Mesh78_Model
+    6400210: Mesh79_Model
+    6400212: Mesh7_Group8_Group1_Model
+    6400214: Mesh80_Model
+    6400216: Mesh81_Model
+    6400218: Mesh82_Model
+    6400220: Mesh83_Model
+    6400222: Mesh84_Model
+    6400224: Mesh85_Model
+    6400226: Mesh86_Model
+    6400228: Mesh87_Model
+    6400230: Mesh88_Model
+    6400232: Mesh89_Model
+    6400234: Mesh8_Group9_Group1_Model
+    6400236: Mesh90_Model
+    6400238: Mesh91_Model
+    6400240: Mesh92_Model
+    6400242: Mesh93_Model
+    6400244: Mesh94_Model
+    6400246: Mesh95_Model
+    6400248: Mesh96_Model
+    6400250: Mesh97_Model
+    6400252: Mesh98_Model
+    6400254: Mesh99_Model
+    6400256: Mesh9_Group10_Group1_Model
   materials:
     importMaterials: 1
     materialName: 0
@@ -678,7 +807,7 @@ ModelImporter:
     lODScreenPercentages: []
     globalScale: 1
     meshCompression: 0
-    addColliders: 0
+    addColliders: 1
     importBlendShapes: 1
     swapUVChannels: 0
     generateSecondaryUV: 0

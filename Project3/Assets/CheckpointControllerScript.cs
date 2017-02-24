@@ -9,6 +9,7 @@ public class CheckpointControllerScript : MonoBehaviour {
 
     private bool[] checkpoints;
     private GameObject currCheck;
+    private int currPoint;
 	// Use this for initialization
 	void Start () {
         int count = 0;
@@ -16,16 +17,22 @@ public class CheckpointControllerScript : MonoBehaviour {
             string[] lines = System.IO.File.ReadAllLines(@"D:/Checkpoint.txt");
             foreach (string line in lines) {
                 string[] tokens = line.Split();
-                GameObject curr = Instantiate(checkpoint, new Vector3((float.Parse(tokens[0])/10), (float.Parse(tokens[1])/10), (float.Parse(tokens[2])/10)),Quaternion.identity);
+                GameObject curr = Instantiate(checkpoint, new Vector3((float.Parse(tokens[0])/12), (float.Parse(tokens[1])/12), (float.Parse(tokens[2])/12)),Quaternion.identity);
                 curr.name = count.ToString();
                 if(count == 0) {
                     player.transform.position = curr.transform.position;
+                    //Destroy(curr);
+                }
+                if(count == 1) {
+                    player.transform.LookAt(curr.transform.position);
+                    currCheck = curr;
                 }
                 count++;
             }
             checkpoints = new bool[count];
             for (int i = 0; i < checkpoints.Length; i++) checkpoints[i] = false;
-            currCheck = GameObject.FindGameObjectWithTag("Checkpoint");
+            //checkpoints[0] = true;
+            currPoint = 1;
         }
         catch { print("Load failed"); };
     }
@@ -38,16 +45,13 @@ public class CheckpointControllerScript : MonoBehaviour {
 
     }
 
-    void newPoint(string num) {
-        checkpoints[int.Parse(num)] = true;
-        GameObject[] checks = GameObject.FindGameObjectsWithTag("Checkpoint");
-        float minDist = float.MaxValue;
-        foreach(GameObject point in checks) {
-            if (!checkpoints[int.Parse(point.name)]) {
-                if(Vector3.Distance(point.transform.position,this.transform.position) < minDist) {
-                    minDist = Vector3.Distance(point.transform.position, this.transform.position);
-                    currCheck = point;
-                }
+    void newPoint(GameObject Point) {
+        checkpoints[int.Parse(Point.name)] = true;
+        foreach(GameObject point in GameObject.FindGameObjectsWithTag("Checkpoint")) {
+            if(int.Parse(point.name) == currPoint) {
+                currCheck = point;
+                currPoint++;
+                break;
             }
         }
     }
