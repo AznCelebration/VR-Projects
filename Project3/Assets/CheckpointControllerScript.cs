@@ -2,12 +2,13 @@
 using System.Collections.Generic;
 using UnityEngine;
 using System;
+using UnityEngine.UI;
 
 public class CheckpointControllerScript : MonoBehaviour {
     public GameObject player;
     public GameObject checkpoint;
     public GameObject compass;
-    public GameObject dist;
+    public Text dist;
     public GameObject cam;
 
     private bool[] checkpoints;
@@ -50,7 +51,7 @@ public class CheckpointControllerScript : MonoBehaviour {
                 break;
             }
         }
-        if (flag) {
+        if (flag && !finish) {
             player.SendMessage("End");
             finish = true;
             this.gameObject.GetComponent<ParticleSystem>().Stop();
@@ -67,6 +68,7 @@ public class CheckpointControllerScript : MonoBehaviour {
             float angle = Vector3.Angle(check, camForward);
             float sign = Mathf.Sign(Vector3.Dot(check, referenceRight));
             float finalAngle = sign * angle;
+            dist.text = Vector3.Distance(player.transform.position, currCheck.transform.position).ToString();
             //if(Vector3.Angle(camForward, check) < 180) {
                 compass.transform.localEulerAngles = new Vector3(0, 0, -finalAngle);
             /*}
