@@ -237,6 +237,7 @@ public class PacmanScript : MonoBehaviour {
             if(time > 10.0f) {
                 power = false;
                 bonus = 1;
+                time = 0;
             }
 
             if (power) this.GetComponent<AudioSource>().pitch = 2f;
