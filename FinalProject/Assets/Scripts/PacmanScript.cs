@@ -39,6 +39,7 @@ public class PacmanScript : MonoBehaviour {
     private GameObject holding2;
     private GameObject currDiff;
     private bool diffPress;
+    private float volScale;
     //private Vector3 cam;
     // Use this for initialization
     void Start() {
@@ -52,6 +53,7 @@ public class PacmanScript : MonoBehaviour {
         queue = "none";
         nameField = "";
         currDiff = easy;
+        volScale = 0;
         // cam = player.transform.position + new Vector3(0, 0.5f, 0);
     }
 
@@ -133,6 +135,13 @@ public class PacmanScript : MonoBehaviour {
                 }
 
                 if (holding != null && OVRInput.Get(OVRInput.Button.One, LControl)) {
+                    volScale = System.Math.Abs(-2.2f - holding.transform.position.x) / 0.35f;
+                    this.GetComponent<AudioSource>().volume = System.Math.Abs(-2.2f - holding.transform.position.x) / 0.35f;
+                    if(!this.GetComponent<AudioSource>().isPlaying) {
+                        this.GetComponent<AudioSource>().Play();
+                    }
+                    
+                    
                     if (fingerTip.transform.position.x < -2.2f) {
                         holding.transform.position = new Vector3(-2.2f, holding.transform.position.y, holding.transform.position.z);
                     }
@@ -145,6 +154,11 @@ public class PacmanScript : MonoBehaviour {
                 }
 
                 if (holding2 != null && OVRInput.Get(OVRInput.Button.One, RControl)) {
+                    volScale = System.Math.Abs(-2.2f - holding.transform.position.x) / 0.35f;
+                    this.GetComponent<AudioSource>().volume = System.Math.Abs(-2.2f - holding2.transform.position.x) / 0.35f;
+                    if (!this.GetComponent<AudioSource>().isPlaying) {
+                        this.GetComponent<AudioSource>().Play();
+                    }
                     if (rfingerTip.transform.position.x < -2.2f) {
                         holding2.transform.position = new Vector3(-2.2f, holding2.transform.position.y, holding2.transform.position.z);
                     }
@@ -156,9 +170,15 @@ public class PacmanScript : MonoBehaviour {
                     }
                 }
                 if (OVRInput.GetUp(OVRInput.Button.One, LControl)) {
+                    if (this.GetComponent<AudioSource>().isPlaying) {
+                        this.GetComponent<AudioSource>().Stop();
+                    }
                     holding = null;
                 }
                 if (OVRInput.GetUp(OVRInput.Button.One, RControl)) {
+                    if (this.GetComponent<AudioSource>().isPlaying) {
+                        this.GetComponent<AudioSource>().Stop();
+                    }
                     holding2 = null;
                 }
             }
