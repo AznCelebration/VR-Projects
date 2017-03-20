@@ -6,6 +6,8 @@ public class GhostScript : MonoBehaviour {
     public GameObject player;
     public GameObject ghost;
     public string state;
+    public GameObject pellets;
+    public GameObject red;
 
     private string mode;
     private string queue;
@@ -19,6 +21,9 @@ public class GhostScript : MonoBehaviour {
     private bool scatter;
     private static System.Random rnd;
     private float time;
+    private string lastTry;
+    private bool inactive;
+    private Vector3 lastPos;
     // Use this for initialization
     void Start () {
         mode = "east";
@@ -28,45 +33,160 @@ public class GhostScript : MonoBehaviour {
         east = false;
         queue = "none";
         state = "init";
-        scatter = false;
+        scatter = true;
         rnd = new System.Random();
         time = 0;
         turn = false;
+        lastTry = "right";
+        inactive = true;
+        lastPos = ghost.transform.position;
     }
 	
 	// Update is called once per frame
 	void Update () {
+        if(pellets.transform.childCount < 120 && ghost.name == "OrangeSpook" && inactive) {
+            ghost.transform.position = new Vector3(-6.5f, 0, 0);
+            mode = "east";
+            inactive = false;
+        }
+        if (pellets.transform.childCount < 250 && ghost.name == "TealSpook" && inactive) {
+            ghost.transform.position = new Vector3(-6.5f, 0, 0);
+            mode = "east";
+            inactive = false;
+        }
         time += Time.deltaTime;
-        if(time > 8.0f) {
-            scatter = scatter ? false : true;
+        if(!scatter && time > 20.0f) {
+            scatter = true;
             time = 0;
         }
-        scatter = false;
+        else if(scatter && time > 8.0f) {
+            scatter = false;
+            time = 0;
+        }
+        //scatter = false;
         state = player.GetComponent<PacmanScript>().state;
         if(state == "play") {
-            if (ghost.transform.position.x == player.transform.position.x) {
-                x = true;
+            if (ghost.name == "RedSpook") {
+                if (ghost.transform.position.x == player.transform.position.x) {
+                    x = true;
+                }
+                else if (ghost.transform.position.x > player.transform.position.x) {
+                    north = true;
+                    x = false;
+                }
+                else {
+                    north = false;
+                    x = false;
+                }
+                if (ghost.transform.position.z == player.transform.position.z) {
+                    z = true;
+                }
+                else if (ghost.transform.position.z > player.transform.position.z) {
+                    east = false;
+                    z = false;
+                }
+                else {
+                    east = true;
+                    z = false;
+                }
             }
-            else if (ghost.transform.position.x > player.transform.position.x) {
-                north = true;
-                x = false;
+            if (ghost.name == "PinkSpook") {
+                float n = 0;
+                float e = 0;
+                if (player.GetComponent<PacmanScript>().mode == "north") n = -4;
+                if (player.GetComponent<PacmanScript>().mode == "south") n = 4;
+                if (player.GetComponent<PacmanScript>().mode == "east") e = 4;
+                if (player.GetComponent<PacmanScript>().mode == "west") e = 4;
+                if (ghost.transform.position.x == player.transform.position.x + n) {
+                    x = true;
+                }
+                else if (ghost.transform.position.x > player.transform.position.x + n) {
+                    north = true;
+                    x = false;
+                }
+                else {
+                    north = false;
+                    x = false;
+                }
+                if (ghost.transform.position.z == player.transform.position.z + e) {
+                    z = true;
+                }
+                else if (ghost.transform.position.z > player.transform.position.z + e) {
+                    east = false;
+                    z = false;
+                }
+                else {
+                    east = true;
+                    z = false;
+                }
             }
-            else {
-                north = false;
-                x = false;
+            if(ghost.name == "OrangeSpook") {
+                if(Vector3.Distance(ghost.transform.position,player.transform.position) > 8.0f) {
+                    if (ghost.transform.position.x == player.transform.position.x) {
+                        x = true;
+                    }
+                    else if (ghost.transform.position.x > player.transform.position.x) {
+                        north = true;
+                        x = false;
+                    }
+                    else {
+                        north = false;
+                        x = false;
+                    }
+                    if (ghost.transform.position.z == player.transform.position.z) {
+                        z = true;
+                    }
+                    else if (ghost.transform.position.z > player.transform.position.z) {
+                        east = false;
+                        z = false;
+                    }
+                    else {
+                        east = true;
+                        z = false;
+                    }
+                }
+                else {
+                    int num = rnd.Next(1, 3);
+                    if (num == 1) {
+                        queue = "left";
+                    }
+                    else {
+                        queue = "right";
+                    }
+                }
             }
-            if (ghost.transform.position.z == player.transform.position.z) {
-                z = true;
+            if (ghost.name == "TealSpook") {
+                float n = 0;
+                float e = 0;
+                if (player.GetComponent<PacmanScript>().mode == "north") n = -2;
+                if (player.GetComponent<PacmanScript>().mode == "south") n = 2;
+                if (player.GetComponent<PacmanScript>().mode == "east") e = 2;
+                if (player.GetComponent<PacmanScript>().mode == "west") e = 2;
+                Vector3 temp = new Vector3(player.transform.position.x + n , player.transform.position.y, player.transform.position.z + e);
+                temp = (temp - red.transform.position) * 2;
+                if (ghost.transform.position.x == temp.x) {
+                    x = true;
+                }
+                else if (ghost.transform.position.x > temp.x) {
+                    north = true;
+                    x = false;
+                }
+                else {
+                    north = false;
+                    x = false;
+                }
+                if (ghost.transform.position.z == temp.z) {
+                    z = true;
+                }
+                else if (ghost.transform.position.z > temp.z) {
+                    east = false;
+                    z = false;
+                }
+                else {
+                    east = true;
+                    z = false;
+                }
             }
-            else if (ghost.transform.position.z > player.transform.position.z) {
-                east = false;
-                z = false;
-            }
-            else {
-                east = true;
-                z = false;
-            }
-
             if (!scatter) {
                 switch (mode) {
                     case "north":
@@ -112,6 +232,28 @@ public class GhostScript : MonoBehaviour {
                 else {
                     queue = "right";
                 }
+            }
+            
+
+            ray = new Ray(ghost.transform.position, ghost.transform.position + ghost.transform.forward);
+            if (Physics.Raycast(ray, out hit, 0.55f)) {
+                if (hit.collider.gameObject.name == "Wall") {
+                    if (queue == "none") { 
+                        if(lastTry == "left") {
+                            queue = "right";
+                            lastTry = "right";
+                        }
+                        else {
+                            queue = "left";
+                            lastTry = "left";
+                        }
+                    }   
+                }
+            }
+
+            if(lastPos == ghost.transform.position) {
+                if (queue == "left") queue = "right";
+                else queue = "left";
             }
             switch (mode) {
                 case "north":
@@ -288,6 +430,8 @@ public class GhostScript : MonoBehaviour {
             }
             float speed = 5f * 0.75f; 
             float adj;
+
+            lastPos = ghost.transform.position;
             switch (mode) {
                 case "east":
                     ray = new Ray(ghost.transform.position, new Vector3(0, 0, 1));
@@ -387,7 +531,7 @@ public class GhostScript : MonoBehaviour {
                 turn = false;
             }
         }
-
+        
         player.GetComponent<PacmanScript>().state = state;
     }
 

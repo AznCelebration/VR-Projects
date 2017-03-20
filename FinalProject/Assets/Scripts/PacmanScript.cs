@@ -28,7 +28,7 @@ public class PacmanScript : MonoBehaviour {
     public GameObject ghosts;
 
     private int points;
-    private string mode;
+    public string mode;
     private string queue;
     private RaycastHit hit;
     private Ray ray;
