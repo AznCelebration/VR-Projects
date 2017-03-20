@@ -15,6 +15,10 @@ public class GhostScript : MonoBehaviour {
     private bool east;
     private bool x;
     private bool z;
+    private bool turn;
+    private bool scatter;
+    private static System.Random rnd;
+    private float time;
     // Use this for initialization
     void Start () {
         mode = "east";
@@ -24,10 +28,20 @@ public class GhostScript : MonoBehaviour {
         east = false;
         queue = "none";
         state = "init";
+        scatter = false;
+        rnd = new System.Random();
+        time = 0;
+        turn = false;
     }
 	
 	// Update is called once per frame
 	void Update () {
+        time += Time.deltaTime;
+        if(time > 8.0f) {
+            scatter = scatter ? false : true;
+            time = 0;
+        }
+        scatter = false;
         state = player.GetComponent<PacmanScript>().state;
         if(state == "play") {
             if (ghost.transform.position.x == player.transform.position.x) {
@@ -53,41 +67,52 @@ public class GhostScript : MonoBehaviour {
                 z = false;
             }
 
-            switch (mode) {
-                case "north":
-                    if (z) {
-                        queue = "none";
+            if (!scatter) {
+                switch (mode) {
+                    case "north":
+                        if (z) {
+                            queue = "none";
+                            break;
+                        }
+                        if (east) { queue = "right"; }
+                        else { queue = "left"; }
                         break;
-                    }
-                    if (east) { queue = "right"; }
-                    else { queue = "left"; }
-                    break;
-                case "south":
-                    if (z) {
-                        queue = "none";
+                    case "south":
+                        if (z) {
+                            queue = "none";
+                            break;
+                        }
+                        if (east) { queue = "left"; }
+                        else { queue = "right"; }
                         break;
-                    }
-                    if (east) { queue = "left"; }
-                    else { queue = "right"; }
-                    break;
-                case "east":
-                    if (x) {
-                        queue = "none";
+                    case "east":
+                        if (x) {
+                            queue = "none";
+                            break;
+                        }
+                        if (north) { queue = "left"; }
+                        else { queue = "right"; }
                         break;
-                    }
-                    if (north) { queue = "left"; }
-                    else { queue = "right"; }
-                    break;
-                case "west":
-                    if (x) {
-                        queue = "none";
+                    case "west":
+                        if (x) {
+                            queue = "none";
+                            break;
+                        }
+                        if (north) { queue = "right"; }
+                        else { queue = "left"; }
                         break;
-                    }
-                    if (north) { queue = "right"; }
-                    else { queue = "left"; }
-                    break;
+                }
             }
 
+            else {
+                int num = rnd.Next(1,3);
+                if(num == 1) {
+                    queue = "left";
+                }
+                else {
+                    queue = "right";
+                }
+            }
             switch (mode) {
                 case "north":
                     ray = new Ray(ghost.transform.position, new Vector3(-1, 0, 0));
@@ -122,7 +147,6 @@ public class GhostScript : MonoBehaviour {
                     }
                     break;
             }
-
             switch (queue) {
                 case "none": break;
                 case "left":
@@ -139,6 +163,8 @@ public class GhostScript : MonoBehaviour {
                                 (float)(System.Math.Truncate((double)ghost.transform.position.z * 10.0) / 10.0));
                                 mode = "north";
                                 queue = "none";
+                                //ghost.transform.LookAt(new Vector3(ghost.transform.forward.x - 1, ghost.transform.forward.y, ghost.transform.forward.z));
+                                turn = true;
                             }
                             break;
                         case "west":
@@ -153,6 +179,8 @@ public class GhostScript : MonoBehaviour {
                                 (float)(System.Math.Truncate((double)ghost.transform.position.z * 10.0) / 10.0));
                                 mode = "south";
                                 queue = "none";
+                                turn = true;
+                                //ghost.transform.LookAt(new Vector3(ghost.transform.forward.x + 1, ghost.transform.forward.y, ghost.transform.forward.z));
                             }
                             break;
                         case "north":
@@ -168,6 +196,8 @@ public class GhostScript : MonoBehaviour {
                                 ghost.transform.position.y, ghost.transform.position.z);
                                 mode = "west";
                                 queue = "none";
+                                turn = true;
+                                //ghost.transform.LookAt(new Vector3(ghost.transform.forward.x - 1, ghost.transform.forward.y, ghost.transform.forward.z));
                             }
                             break;
                         case "south":
@@ -183,6 +213,8 @@ public class GhostScript : MonoBehaviour {
                                 ghost.transform.position.y, ghost.transform.position.z);
                                 mode = "east";
                                 queue = "none";
+                                turn = true;
+                                //ghost.transform.LookAt(new Vector3(ghost.transform.forward.x, ghost.transform.forward.y, ghost.transform.forward.z + 1));
                             }
                             break;
                     }
@@ -201,6 +233,7 @@ public class GhostScript : MonoBehaviour {
                                 (float)(System.Math.Truncate((double)ghost.transform.position.z * 10.0) / 10.0));
                                 mode = "south";
                                 queue = "none";
+                                turn = true;
                             }
                             break;
                         case "west":
@@ -215,6 +248,7 @@ public class GhostScript : MonoBehaviour {
                                 (float)(System.Math.Truncate((double)ghost.transform.position.z * 10.0) / 10.0));
                                 mode = "north";
                                 queue = "none";
+                                turn = true;
                             }
                             break;
                         case "north":
@@ -230,6 +264,7 @@ public class GhostScript : MonoBehaviour {
                                 ghost.transform.position.y, ghost.transform.position.z);
                                 mode = "east";
                                 queue = "none";
+                                turn = true;
                             }
                             break;
                         case "south":
@@ -245,6 +280,7 @@ public class GhostScript : MonoBehaviour {
                                 ghost.transform.position.y, ghost.transform.position.z);
                                 mode = "west";
                                 queue = "none";
+                                turn = true;
                             }
                             break;
                     }
@@ -339,6 +375,16 @@ public class GhostScript : MonoBehaviour {
                 case "west": ghost.transform.forward = new Vector3(ghost.transform.forward.x, ghost.transform.forward.y, ghost.transform.forward.z - 1); break;
                 case "east": ghost.transform.forward = new Vector3(ghost.transform.forward.x, ghost.transform.forward.y, ghost.transform.forward.z + 1); break;
                 case "south": ghost.transform.forward = new Vector3(ghost.transform.forward.x + 1, ghost.transform.forward.y, ghost.transform.forward.z); break;
+            }
+
+            if(turn) {
+                switch (mode) {
+                    case "north": ghost.transform.Translate(new Vector3(-0.3f, 0, 0), Space.World); break;
+                    case "south": ghost.transform.Translate(new Vector3(0.3f, 0, 0), Space.World); break;
+                    case "west": ghost.transform.Translate(new Vector3(0, 0, -0.3f), Space.World); break;
+                    case "east": ghost.transform.Translate(new Vector3(0, 0, 0.3f), Space.World); break;
+                }
+                turn = false;
             }
         }
 
