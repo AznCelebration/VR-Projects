@@ -28,14 +28,17 @@ public class PacmanScript : MonoBehaviour {
     private RaycastHit hit;
     private Ray ray;
     private GameObject hover;
+    private GameObject hover2;
     private string nameField;
     private bool pressed;
+    private bool pressed2;
     private bool firstOver;
     //private Vector3 cam;
     // Use this for initialization
     void Start() {
         firstOver = false;
         pressed = false;
+        pressed2 = false;
         points = 0;
         state = "play";
         mode = "east";
@@ -367,7 +370,8 @@ public class PacmanScript : MonoBehaviour {
                     hover.GetComponent<Renderer>().material = hoverM;
                     if (!pressed) {
                         pressed = true;
-                        KeyPressed();
+                        KeyPressed(true);
+
                     }
 
                 }
@@ -385,47 +389,48 @@ public class PacmanScript : MonoBehaviour {
                 pressed = false;
             }
 
-            /*fingerTip = rHand.transform.GetChild(0);
+            RaycastHit[] hitsR;
+            fingerTip = rHand.transform.GetChild(0);
             fingerTip = fingerTip.transform.GetChild(0);
             fingerTip = fingerTip.transform.GetChild(0);
             fingerTip = fingerTip.transform.GetChild(2);
             fingerTip = fingerTip.transform.GetChild(0);
             fingerTip = fingerTip.transform.GetChild(0);
             fingerTip = fingerTip.transform.GetChild(0);
-            hits = Physics.SphereCastAll(fingerTip.position, 0.01f, rHand.transform.forward, 0f);
-            if (hits.Length > 0) {
+            hitsR = Physics.SphereCastAll(fingerTip.position, 0.01f, rHand.transform.forward, 0f);
+            if (hitsR.Length > 0) {
                 int closest = 0;
-                for (int i = 0; i < hits.Length; i++) {
-                    if (hits[i].distance < hits[closest].distance) {
+                for (int i = 0; i < hitsR.Length; i++) {
+                    if (hitsR[i].distance < hitsR[closest].distance) {
                         closest = i;
                     }
                 }
 
-                if (hits[closest].transform.gameObject.tag == "Key") {
-                    if (hover != null && hover.name != hits[closest].transform.gameObject.name) {
-                        hover.GetComponent<Renderer>().material = notHover;
+                if (hitsR[closest].transform.gameObject.tag == "Key") {
+                    if (hover2 != null && hover2.name != hitsR[closest].transform.gameObject.name) {
+                        hover2.GetComponent<Renderer>().material = notHover;
                     }
-                    hover = hits[closest].transform.gameObject;
-                    hover.GetComponent<Renderer>().material = hoverM;
-                    if (!pressed) {
-                        pressed = true;
-                        KeyPressed();
+                    hover2 = hitsR[closest].transform.gameObject;
+                    hover2.GetComponent<Renderer>().material = hoverM;
+                    if (!pressed2) {
+                        pressed2 = true;
+                        KeyPressed(false);
                     }
 
                 }
                 else {
-                    if (hover != null) {
-                        hover.GetComponent<Renderer>().material = notHover;
+                    if (hover2 != null) {
+                        hover2.GetComponent<Renderer>().material = notHover;
                     }
                 }
 
             }
             else {
-                if (hover != null) {
-                    hover.GetComponent<Renderer>().material = notHover;
+                if (hover2 != null) {
+                    hover2.GetComponent<Renderer>().material = notHover;
                 }
-                pressed = false;
-            }*/
+                pressed2 = false;
+            }
         }
         if (pellets.transform.childCount == 0 && state != "win") {
             state = "win";
@@ -434,28 +439,55 @@ public class PacmanScript : MonoBehaviour {
         pointUI.text = "Points: " + points.ToString();
     }
 
-    void KeyPressed() {
-        if (hover.name == "Space") {
-            if (nameField.Length < 15) {
-                nameField += " ";
+    void KeyPressed(bool diff) {
+        if(diff) {
+            if (hover.name == "Space") {
+                if (nameField.Length < 15) {
+                    nameField += " ";
+                }
             }
-        }
-        else if (hover.name == "Back") {
-            if (nameField != "") {
-                nameField = nameField.Remove(nameField.Length - 1);
+            else if (hover.name == "Back") {
+                if (nameField != "") {
+                    nameField = nameField.Remove(nameField.Length - 1);
+                }
             }
-        }
-        else if (hover.name == "Enter") {
-            if(nameField != "") {
-                Save();
-                menuTitle.text = "Leaderboard\n";
-                menuTitle.text += Load();
-                keyboard.SetActive(false);
+            else if (hover.name == "Enter") {
+                if (nameField != "") {
+                    Save();
+                    menuTitle.text = "Leaderboard\n";
+                    menuTitle.text += Load();
+                    keyboard.SetActive(false);
+                }
+            }
+            else {
+                if (nameField.Length < 15) {
+                    nameField += hover.name;
+                }
             }
         }
         else {
-            if (nameField.Length < 15) {
-                nameField += hover.name;
+            if (hover2.name == "Space") {
+                if (nameField.Length < 15) {
+                    nameField += " ";
+                }
+            }
+            else if (hover2.name == "Back") {
+                if (nameField != "") {
+                    nameField = nameField.Remove(nameField.Length - 1);
+                }
+            }
+            else if (hover2.name == "Enter") {
+                if (nameField != "") {
+                    Save();
+                    menuTitle.text = "Leaderboard\n";
+                    menuTitle.text += Load();
+                    keyboard.SetActive(false);
+                }
+            }
+            else {
+                if (nameField.Length < 15) {
+                    nameField += hover2.name;
+                }
             }
         }
         field.text = nameField;
