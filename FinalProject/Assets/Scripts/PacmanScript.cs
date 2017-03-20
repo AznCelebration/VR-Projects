@@ -36,6 +36,7 @@ public class PacmanScript : MonoBehaviour {
     private bool pressed2;
     private bool firstOver;
     private GameObject holding;
+    private GameObject holding2;
     private GameObject currDiff;
     private bool diffPress;
     //private Vector3 cam;
@@ -88,19 +89,24 @@ public class PacmanScript : MonoBehaviour {
                         currDiff = hit;
                         hit.GetComponent<Renderer>().material = hoverM;
                     }
+                    else if (hits[closest].transform.gameObject.name == "Slider") {
+                        holding = hits[closest].transform.gameObject;
+                    }
 
                 }
 
+                
 
                 RaycastHit[] hitsR;
-                fingerTip = rHand.transform.GetChild(0);
-                fingerTip = fingerTip.transform.GetChild(0);
-                fingerTip = fingerTip.transform.GetChild(0);
-                fingerTip = fingerTip.transform.GetChild(2);
-                fingerTip = fingerTip.transform.GetChild(0);
-                fingerTip = fingerTip.transform.GetChild(0);
-                fingerTip = fingerTip.transform.GetChild(0);
-                hitsR = Physics.SphereCastAll(fingerTip.position, 0.01f, rHand.transform.forward, 0f);
+                Transform rfingerTip;
+                rfingerTip = rHand.transform.GetChild(0);
+                rfingerTip = rfingerTip.transform.GetChild(0);
+                rfingerTip = rfingerTip.transform.GetChild(0);
+                rfingerTip = rfingerTip.transform.GetChild(2);
+                rfingerTip = rfingerTip.transform.GetChild(0);
+                rfingerTip = rfingerTip.transform.GetChild(0);
+                rfingerTip = rfingerTip.transform.GetChild(0);
+                hitsR = Physics.SphereCastAll(rfingerTip.position, 0.01f, rHand.transform.forward, 0f);
                 if (hitsR.Length > 0) {
                     int closest = 0;
                     for (int i = 0; i < hitsR.Length; i++) {
@@ -120,9 +126,43 @@ public class PacmanScript : MonoBehaviour {
                         currDiff = hit;
                         hit.GetComponent<Renderer>().material = hoverM;
                     }
+                    else if (hitsR[closest].transform.gameObject.name == "Slider") {
+                        holding2 = hitsR[closest].transform.gameObject;
+                    }
 
                 }
+
+                if (holding != null && OVRInput.Get(OVRInput.Button.One, LControl)) {
+                    if (fingerTip.transform.position.x < -2.2f) {
+                        holding.transform.position = new Vector3(-2.2f, holding.transform.position.y, holding.transform.position.z);
+                    }
+                    else if (fingerTip.transform.position.x > -1.85f) {
+                        holding.transform.position = new Vector3(-1.85f, holding.transform.position.y, holding.transform.position.z);
+                    }
+                    else {
+                        holding.transform.position = new Vector3(fingerTip.transform.position.x, holding.transform.position.y, holding.transform.position.z);
+                    }
+                }
+
+                if (holding2 != null && OVRInput.Get(OVRInput.Button.One, RControl)) {
+                    if (rfingerTip.transform.position.x < -2.2f) {
+                        holding2.transform.position = new Vector3(-2.2f, holding2.transform.position.y, holding2.transform.position.z);
+                    }
+                    else if (rfingerTip.transform.position.x > -1.85f) {
+                        holding2.transform.position = new Vector3(-1.85f, holding2.transform.position.y, holding2.transform.position.z);
+                    }
+                    else {
+                        holding2.transform.position = new Vector3(rfingerTip.transform.position.x, holding2.transform.position.y, holding2.transform.position.z);
+                    }
+                }
+                if (OVRInput.GetUp(OVRInput.Button.One, LControl)) {
+                    holding = null;
+                }
+                if (OVRInput.GetUp(OVRInput.Button.One, RControl)) {
+                    holding2 = null;
+                }
             }
+            
             Vector3 temp = new Vector3(6.5f, 0.5f, -0.5f);
         }
         
