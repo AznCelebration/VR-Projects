@@ -26,6 +26,8 @@ public class PacmanScript : MonoBehaviour {
     public AudioClip intro;
     public GameObject home;
     public GameObject ghosts;
+    public AudioClip powerS;
+    public AudioClip eat;
 
     private int points;
     public string mode;
@@ -42,12 +44,17 @@ public class PacmanScript : MonoBehaviour {
     private GameObject holding2;
     private GameObject currDiff;
     private bool diffPress;
-    private float volScale;
+    public float volScale;
+    public bool power;
     float time;
+    float powerTime;
+    private int bonus;
     //private Vector3 cam;
     // Use this for initialization
     void Start() {
+        bonus = 1;
         time = 0;
+        powerTime = 0;
         firstOver = false;
         pressed = false;
         pressed2 = false;
@@ -59,6 +66,7 @@ public class PacmanScript : MonoBehaviour {
         nameField = "";
         currDiff = easy;
         volScale = 0;
+        power = false;
         // cam = player.transform.position + new Vector3(0, 0.5f, 0);
     }
 
@@ -223,7 +231,16 @@ public class PacmanScript : MonoBehaviour {
         }
 
         if (state == "play") {
-            
+            if(power) {
+                time += Time.deltaTime;
+            }
+            if(time > 10.0f) {
+                power = false;
+                bonus = 1;
+            }
+
+            if (power) this.GetComponent<AudioSource>().pitch = 2f;
+            else this.GetComponent<AudioSource>().pitch = 1;
             if (OVRInput.GetDown(OVRInput.Button.Two, LControl)) {
                 if (queue == "left") {
                     queue = "none";
@@ -265,6 +282,18 @@ public class PacmanScript : MonoBehaviour {
                             Destroy(hit.collider.gameObject);
                             points += 10;
                         }
+                        else if (hit.collider.gameObject.name == "Power") {
+                            power = true;
+                            points += 50;
+                            Destroy(hit.collider.gameObject);
+                            this.GetComponent<AudioSource>().PlayOneShot(powerS);
+                        }
+                        else if (hit.collider.gameObject.tag == "Ghost" && power) {
+                            hit.collider.gameObject.transform.parent.gameObject.GetComponent<GhostScript>().alive = false;
+                            points += 200 * bonus;
+                            bonus++;
+                            this.GetComponent<AudioSource>().PlayOneShot(eat);
+                        }
                     }
                     break;
                 case "east":
@@ -273,6 +302,18 @@ public class PacmanScript : MonoBehaviour {
                         if (hit.collider.gameObject.name == "Pellet") {
                             Destroy(hit.collider.gameObject);
                             points += 10;
+                        }
+                        else if (hit.collider.gameObject.name == "Power") {
+                            power = true;
+                            points += 50;
+                            Destroy(hit.collider.gameObject);
+                            this.GetComponent<AudioSource>().PlayOneShot(powerS);
+                        }
+                        else if (hit.collider.gameObject.tag == "Ghost" && power) {
+                            hit.collider.gameObject.transform.parent.gameObject.GetComponent<GhostScript>().alive = false;
+                            points += 200 * bonus;
+                            bonus++;
+                            this.GetComponent<AudioSource>().PlayOneShot(eat);
                         }
                     }
                     break;
@@ -283,6 +324,18 @@ public class PacmanScript : MonoBehaviour {
                             Destroy(hit.collider.gameObject);
                             points += 10;
                         }
+                        else if (hit.collider.gameObject.name == "Power") {
+                            power = true;
+                            points += 50;
+                            Destroy(hit.collider.gameObject);
+                            this.GetComponent<AudioSource>().PlayOneShot(powerS);
+                        }
+                        else if (hit.collider.gameObject.tag == "Ghost" && power) {
+                            hit.collider.gameObject.transform.parent.gameObject.GetComponent<GhostScript>().alive = false;
+                            points += 200 * bonus;
+                            bonus++;
+                            this.GetComponent<AudioSource>().PlayOneShot(eat);
+                        }
                     }
                     break;
                 case "west":
@@ -291,6 +344,18 @@ public class PacmanScript : MonoBehaviour {
                         if (hit.collider.gameObject.name == "Pellet") {
                             Destroy(hit.collider.gameObject);
                             points += 10;
+                        }
+                        else if (hit.collider.gameObject.name == "Power") {
+                            power = true;
+                            points += 50;
+                            Destroy(hit.collider.gameObject);
+                            this.GetComponent<AudioSource>().PlayOneShot(powerS);
+                        }
+                        else if (hit.collider.gameObject.tag == "Ghost" && power) {
+                            hit.collider.gameObject.transform.parent.gameObject.GetComponent<GhostScript>().alive = false;
+                            points += 200 * bonus;
+                            bonus++;
+                            this.GetComponent<AudioSource>().PlayOneShot(eat);
                         }
                     }
                     break;

@@ -8,6 +8,10 @@ public class GhostScript : MonoBehaviour {
     public string state;
     public GameObject pellets;
     public GameObject red;
+    public bool alive;
+    public Material scaredMat;
+    public Material origMat;
+    public AudioClip die;
 
     private string mode;
     private string queue;
@@ -24,8 +28,11 @@ public class GhostScript : MonoBehaviour {
     private string lastTry;
     private bool inactive;
     private Vector3 lastPos;
+    private bool power;
     // Use this for initialization
     void Start () {
+        power = false;
+        alive = true;
         mode = "east";
         north = false;
         x = false;
@@ -44,6 +51,8 @@ public class GhostScript : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
+        power = player.GetComponent<PacmanScript>().power;
+        
         if(pellets.transform.childCount < 120 && ghost.name == "OrangeSpook" && inactive) {
             ghost.transform.position = new Vector3(-6.5f, 0, 0);
             mode = "east";
@@ -66,6 +75,17 @@ public class GhostScript : MonoBehaviour {
         //scatter = false;
         state = player.GetComponent<PacmanScript>().state;
         if(state == "play") {
+            if (power) {
+                ghost.transform.GetChild(0).gameObject.GetComponent<Renderer>().material = scaredMat;
+            }
+            else {
+                ghost.transform.GetChild(0).gameObject.GetComponent<Renderer>().material = origMat;
+            }
+
+            if (!alive) {
+                ghost.transform.position = new Vector3(-6.5f, 0, 0);
+                alive = true;
+            }
             if (ghost.name == "RedSpook") {
                 if (ghost.transform.position.x == player.transform.position.x) {
                     x = true;
@@ -234,7 +254,64 @@ public class GhostScript : MonoBehaviour {
                 }
             }
             
-
+            if(player.GetComponent<PacmanScript>().power && alive) {
+                if (ghost.transform.position.x == player.transform.position.x) {
+                    x = true;
+                }
+                else if (ghost.transform.position.x > player.transform.position.x) {
+                    north = true;
+                    x = false;
+                }
+                else {
+                    north = false;
+                    x = false;
+                }
+                if (ghost.transform.position.z == player.transform.position.z) {
+                    z = true;
+                }
+                else if (ghost.transform.position.z > player.transform.position.z) {
+                    east = false;
+                    z = false;
+                }
+                else {
+                    east = true;
+                    z = false;
+                }
+                switch (mode) {
+                    case "north":
+                        if (z) {
+                            queue = "none";
+                            break;
+                        }
+                        if (east) { queue = "left"; }
+                        else { queue = "right"; }
+                        break;
+                    case "south":
+                        if (z) {
+                            queue = "none";
+                            break;
+                        }
+                        if (east) { queue = "right"; }
+                        else { queue = "left"; }
+                        break;
+                    case "east":
+                        if (x) {
+                            queue = "none";
+                            break;
+                        }
+                        if (north) { queue = "right"; }
+                        else { queue = "left"; }
+                        break;
+                    case "west":
+                        if (x) {
+                            queue = "none";
+                            break;
+                        }
+                        if (north) { queue = "left"; }
+                        else { queue = "right"; }
+                        break;
+                }
+            }
             ray = new Ray(ghost.transform.position, ghost.transform.position + ghost.transform.forward);
             if (Physics.Raycast(ray, out hit, 0.55f)) {
                 if (hit.collider.gameObject.name == "Wall") {
@@ -251,43 +328,69 @@ public class GhostScript : MonoBehaviour {
                 }
             }
 
-            if(lastPos == ghost.transform.position) {
+            ray = new Ray(ghost.transform.position, ghost.transform.position + ghost.transform.forward);
+            if (Physics.Raycast(ray, out hit, 0.55f)) {
+                if (hit.collider.gameObject.name == "Wall") {
+                    if (queue == "none") {
+                        if (lastTry == "left") {
+                            queue = "right";
+                            lastTry = "right";
+                        }
+                        else {
+                            queue = "left";
+                            lastTry = "left";
+                        }
+                    }
+                }
+            }
+
+            if (lastPos == ghost.transform.position) {
                 if (queue == "left") queue = "right";
                 else queue = "left";
             }
-            switch (mode) {
-                case "north":
-                    ray = new Ray(ghost.transform.position, new Vector3(-1, 0, 0));
-                    if (Physics.Raycast(ray, out hit, 0.1f)) {
-                        if (hit.collider.gameObject.name == "Pacman") {
-                            state = "dead";
+            if (!player.GetComponent<PacmanScript>().power) {
+                switch (mode) {
+                    case "north":
+                        ray = new Ray(ghost.transform.position, new Vector3(-1, 0, 0));
+                        if (Physics.Raycast(ray, out hit, 0.1f)) {
+                            if (hit.collider.gameObject.name == "Pacman") {
+                                state = "dead";
+                                ghost.GetComponent<AudioSource>().volume = player.GetComponent<PacmanScript>().volScale;
+                                ghost.GetComponent<AudioSource>().Play();
+                            }
                         }
-                    }
-                    break;
-                case "east":
-                    ray = new Ray(ghost.transform.position, new Vector3(0, 0, 1));
-                    if (Physics.Raycast(ray, out hit, 0.1f)) {
-                        if (hit.collider.gameObject.name == "Pacman") {
-                            state = "dead";
+                        break;
+                    case "east":
+                        ray = new Ray(ghost.transform.position, new Vector3(0, 0, 1));
+                        if (Physics.Raycast(ray, out hit, 0.1f)) {
+                            if (hit.collider.gameObject.name == "Pacman") {
+                                state = "dead";
+                                ghost.GetComponent<AudioSource>().volume = player.GetComponent<PacmanScript>().volScale;
+                                ghost.GetComponent<AudioSource>().Play();
+                            }
                         }
-                    }
-                    break;
-                case "south":
-                    ray = new Ray(ghost.transform.position, new Vector3(1, 0, 0));
-                    if (Physics.Raycast(ray, out hit, 0.1f)) {
-                        if (hit.collider.gameObject.name == "Pacman") {
-                            state = "dead";
+                        break;
+                    case "south":
+                        ray = new Ray(ghost.transform.position, new Vector3(1, 0, 0));
+                        if (Physics.Raycast(ray, out hit, 0.1f)) {
+                            if (hit.collider.gameObject.name == "Pacman") {
+                                state = "dead";
+                                ghost.GetComponent<AudioSource>().volume = player.GetComponent<PacmanScript>().volScale;
+                                ghost.GetComponent<AudioSource>().Play();
+                            }
                         }
-                    }
-                    break;
-                case "west":
-                    ray = new Ray(ghost.transform.position, new Vector3(0, 0, -1));
-                    if (Physics.Raycast(ray, out hit, 0.1f)) {
-                        if (hit.collider.gameObject.name == "Pacman") {
-                            state = "dead";
+                        break;
+                    case "west":
+                        ray = new Ray(ghost.transform.position, new Vector3(0, 0, -1));
+                        if (Physics.Raycast(ray, out hit, 0.1f)) {
+                            if (hit.collider.gameObject.name == "Pacman") {
+                                state = "dead";
+                                ghost.GetComponent<AudioSource>().volume = player.GetComponent<PacmanScript>().volScale;
+                                ghost.GetComponent<AudioSource>().Play();
+                            }
                         }
-                    }
-                    break;
+                        break;
+                }
             }
             switch (queue) {
                 case "none": break;
@@ -530,6 +633,7 @@ public class GhostScript : MonoBehaviour {
                 }
                 turn = false;
             }
+            
         }
         
         player.GetComponent<PacmanScript>().state = state;
