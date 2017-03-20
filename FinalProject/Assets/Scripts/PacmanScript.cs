@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -19,6 +20,7 @@ public class PacmanScript : MonoBehaviour {
     public Material hoverM;
     public GameObject pacman;
     public TextMesh field;
+    public GameObject keyboard;
 
     private int points;
     private string mode;
@@ -28,21 +30,23 @@ public class PacmanScript : MonoBehaviour {
     private GameObject hover;
     private string nameField;
     private bool pressed;
+    private bool firstOver;
     //private Vector3 cam;
     // Use this for initialization
-    void Start () {
+    void Start() {
+        firstOver = false;
         pressed = false;
         points = 0;
         state = "play";
         mode = "east";
         queue = "none";
         nameField = "";
-       // cam = player.transform.position + new Vector3(0, 0.5f, 0);
-	}
-	
-	// Update is called once per frame
-	void Update () {
-        if(state == "play") {
+        // cam = player.transform.position + new Vector3(0, 0.5f, 0);
+    }
+
+    // Update is called once per frame
+    void Update() {
+        if (state == "play") {
             if (OVRInput.GetDown(OVRInput.Button.Two, LControl)) {
                 if (queue == "left") {
                     queue = "none";
@@ -326,11 +330,15 @@ public class PacmanScript : MonoBehaviour {
                     break;
             }
         }
-        if(state == "win") {
+        if (state == "win" || state == "dead") {
             uiCam.enabled = false;
+            if(!firstOver) {
+                firstOver = true;
+                menuTitle.text = "Game over\nScore: " + points.ToString() + "\nEnter your name";
+                pacman.SetActive(false);
+            }
 
-            menuTitle.text = "Game over\nScore: " + points.ToString() + "\nEnter your name";
-            player.transform.position = Vector3.MoveTowards(player.transform.position, new Vector3(-2, 33, 0),0.2f);
+            player.transform.position = Vector3.MoveTowards(player.transform.position, new Vector3(-2, 33, 0), 0.2f);
             player.transform.forward = Vector3.MoveTowards(player.transform.forward, new Vector3(0, -1, 0), 0.05f);
 
             RaycastHit[] hits;
@@ -350,44 +358,85 @@ public class PacmanScript : MonoBehaviour {
                         closest = i;
                     }
                 }
-                
-                if(hits[closest].transform.gameObject.tag == "Key") {
+
+                if (hits[closest].transform.gameObject.tag == "Key") {
                     if (hover != null && hover.name != hits[closest].transform.gameObject.name) {
                         hover.GetComponent<Renderer>().material = notHover;
                     }
                     hover = hits[closest].transform.gameObject;
                     hover.GetComponent<Renderer>().material = hoverM;
-                    if(!pressed) {
+                    if (!pressed) {
                         pressed = true;
                         KeyPressed();
                     }
-                    
+
                 }
                 else {
                     if (hover != null) {
                         hover.GetComponent<Renderer>().material = notHover;
                     }
                 }
-                
+
             }
             else {
-                if(hover != null) {
+                if (hover != null) {
                     hover.GetComponent<Renderer>().material = notHover;
                 }
                 pressed = false;
             }
+
+            /*fingerTip = rHand.transform.GetChild(0);
+            fingerTip = fingerTip.transform.GetChild(0);
+            fingerTip = fingerTip.transform.GetChild(0);
+            fingerTip = fingerTip.transform.GetChild(2);
+            fingerTip = fingerTip.transform.GetChild(0);
+            fingerTip = fingerTip.transform.GetChild(0);
+            fingerTip = fingerTip.transform.GetChild(0);
+            hits = Physics.SphereCastAll(fingerTip.position, 0.01f, rHand.transform.forward, 0f);
+            if (hits.Length > 0) {
+                int closest = 0;
+                for (int i = 0; i < hits.Length; i++) {
+                    if (hits[i].distance < hits[closest].distance) {
+                        closest = i;
+                    }
+                }
+
+                if (hits[closest].transform.gameObject.tag == "Key") {
+                    if (hover != null && hover.name != hits[closest].transform.gameObject.name) {
+                        hover.GetComponent<Renderer>().material = notHover;
+                    }
+                    hover = hits[closest].transform.gameObject;
+                    hover.GetComponent<Renderer>().material = hoverM;
+                    if (!pressed) {
+                        pressed = true;
+                        KeyPressed();
+                    }
+
+                }
+                else {
+                    if (hover != null) {
+                        hover.GetComponent<Renderer>().material = notHover;
+                    }
+                }
+
+            }
+            else {
+                if (hover != null) {
+                    hover.GetComponent<Renderer>().material = notHover;
+                }
+                pressed = false;
+            }*/
         }
-        if(pellets.transform.childCount == 270) {
+        if (pellets.transform.childCount == 0 && state != "win") {
             state = "win";
-            pacman.SetActive(false);
         }
 
         pointUI.text = "Points: " + points.ToString();
-	}
+    }
 
     void KeyPressed() {
         if (hover.name == "Space") {
-            if(nameField.Length < 15) {
+            if (nameField.Length < 15) {
                 nameField += " ";
             }
         }
@@ -396,8 +445,13 @@ public class PacmanScript : MonoBehaviour {
                 nameField = nameField.Remove(nameField.Length - 1);
             }
         }
-        else if (hover.name == "Enter"){
-
+        else if (hover.name == "Enter") {
+            if(nameField != "") {
+                Save();
+                menuTitle.text = "Leaderboard\n";
+                menuTitle.text += Load();
+                keyboard.SetActive(false);
+            }
         }
         else {
             if (nameField.Length < 15) {
@@ -405,6 +459,49 @@ public class PacmanScript : MonoBehaviour {
             }
         }
         field.text = nameField;
+    }
+
+    void Save() {
+        string toWrite = "";
+        Dictionary<string, int> scores = LoadNum();
+        if(scores != null) {
+            scores[nameField] = points;
+            foreach (KeyValuePair<string, int> item in scores.OrderByDescending(key => key.Value)) {
+                toWrite += item.Key;
+                toWrite += "  ";
+                toWrite += item.Value.ToString();
+                toWrite += "\n";
+            }
+        }
+        else {
+            toWrite += nameField;
+            toWrite += "  ";
+            toWrite += points.ToString();
+            toWrite += "\n";
+        }
+        System.IO.File.WriteAllText("D:/HighScore.txt", toWrite);
+    }
+
+    string Load() {
+        try {
+            string text = System.IO.File.ReadAllText(@"D:/HighScore.txt");
+            return text;
+        }
+        catch { return null; };
+    }
+
+    Dictionary<string,int> LoadNum() {
+        try {
+            Dictionary<string, int> toReturn = new Dictionary<string, int>();
+            string[] lines = System.IO.File.ReadAllLines(@"D:/HighScore.txt");
+            
+            foreach (string line in lines) {
+                string[] tokens = line.Split();
+                toReturn[tokens[0]] = int.Parse(tokens[tokens.Length-1]);
+            }
+            return toReturn;
+        }
+        catch { return null; };
     }
 }
 
