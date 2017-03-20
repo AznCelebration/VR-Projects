@@ -5,23 +5,25 @@ using UnityEngine;
 public class PacmanScript : MonoBehaviour {
     public GameObject player;
     public GameObject testCam;
+    public OVRInput.Controller LControl;
+    public OVRInput.Controller RControl;
 
     private string mode;
     private string queue;
     private RaycastHit hit;
     private Ray ray;
-    private Vector3 cam;
+    //private Vector3 cam;
     // Use this for initialization
     void Start () {
         mode = "east";
         queue = "none";
-        cam = player.transform.position + new Vector3(0, 0.5f, 0);
+       // cam = player.transform.position + new Vector3(0, 0.5f, 0);
 	}
 	
 	// Update is called once per frame
 	void Update () {
-        cam = player.transform.position + new Vector3(0, 0.5f, 0);
-        if (Input.GetKeyDown("a")) {
+        //cam = player.transform.position + new Vector3(0, 0.5f, 0);
+        if (OVRInput.GetDown(OVRInput.Button.Two, LControl)) {
             if(queue == "left") {
                 queue = "none";
             }
@@ -29,7 +31,7 @@ public class PacmanScript : MonoBehaviour {
                 queue = "left";
             }
         }
-        if (Input.GetKeyDown("d")) {
+        if (OVRInput.GetDown(OVRInput.Button.Two, RControl)) {
             if (queue == "right") {
                 queue = "none";
             }
@@ -38,7 +40,7 @@ public class PacmanScript : MonoBehaviour {
             }
         }
 
-        if (Input.GetKeyDown("s")) {
+        if (OVRInput.GetDown(OVRInput.Button.One, RControl) || OVRInput.GetDown(OVRInput.Button.One, RControl)) {
             switch (mode) {
                 case "east":
                     mode = "west";
@@ -56,7 +58,7 @@ public class PacmanScript : MonoBehaviour {
         }
         switch (mode) {
             case "north":
-                ray = new Ray(cam, new Vector3(-1, 0, 0));
+                ray = new Ray(player.transform.position, new Vector3(-1, 0, 0));
                 if (Physics.Raycast(ray, out hit, 0.1f)) {
                     if (hit.collider.gameObject.name == "Pellet") {
                         Destroy(hit.collider.gameObject);
@@ -64,7 +66,7 @@ public class PacmanScript : MonoBehaviour {
                 }
                 break;
             case "east":
-                ray = new Ray(cam, new Vector3(0, 0, 1));
+                ray = new Ray(player.transform.position, new Vector3(0, 0, 1));
                 if (Physics.Raycast(ray, out hit, 0.1f)) {
                     if (hit.collider.gameObject.name == "Pellet") {
                         Destroy(hit.collider.gameObject);
@@ -72,7 +74,7 @@ public class PacmanScript : MonoBehaviour {
                 }
                 break;
             case "south":
-                ray = new Ray(cam, new Vector3(1, 0, 0));
+                ray = new Ray(player.transform.position, new Vector3(1, 0, 0));
                 if (Physics.Raycast(ray, out hit, 0.1f)) {
                     if (hit.collider.gameObject.name == "Pellet") {
                         Destroy(hit.collider.gameObject);
@@ -80,7 +82,7 @@ public class PacmanScript : MonoBehaviour {
                 }
                 break;
             case "west":
-                ray = new Ray(cam, new Vector3(0, 0, -1));
+                ray = new Ray(player.transform.position, new Vector3(0, 0, -1));
                 if (Physics.Raycast(ray, out hit, 0.1f)) {
                     if (hit.collider.gameObject.name == "Pellet") {
                         Destroy(hit.collider.gameObject);
@@ -95,7 +97,7 @@ public class PacmanScript : MonoBehaviour {
                 switch (mode) {
                     case "east":
                         if (System.Math.Abs((int)(player.transform.position.z * 10) % 10) == 5) {
-                            ray = new Ray(cam, new Vector3(-1, 0, 0));
+                            ray = new Ray(player.transform.position, new Vector3(-1, 0, 0));
                             if (Physics.Raycast(ray, out hit, 0.55f)) {
                                 if (hit.collider.gameObject.name == "Wall") {
                                     break;
@@ -109,7 +111,7 @@ public class PacmanScript : MonoBehaviour {
                         break;
                     case "west":
                         if (System.Math.Abs((int)(player.transform.position.z * 10) % 10) == 5) {
-                            ray = new Ray(cam, new Vector3(1, 0, 0));
+                            ray = new Ray(player.transform.position, new Vector3(1, 0, 0));
                             if (Physics.Raycast(ray, out hit, 0.55f)) {
                                 if (hit.collider.gameObject.name == "Wall") {
                                     break;
@@ -123,7 +125,7 @@ public class PacmanScript : MonoBehaviour {
                         break;
                     case "north":
                         if (System.Math.Abs((int)(player.transform.position.x * 10) % 10) == 5) {
-                            ray = new Ray(cam, new Vector3(0, 0, -1));
+                            ray = new Ray(player.transform.position, new Vector3(0, 0, -1));
                             if (Physics.Raycast(ray, out hit, 0.55f)) {
                                 if (hit.collider.gameObject.name == "Wall") {
                                     break;
@@ -138,7 +140,7 @@ public class PacmanScript : MonoBehaviour {
                         break;
                     case "south":
                         if (System.Math.Abs((int)(player.transform.position.x * 10) % 10) == 5) {
-                            ray = new Ray(cam, new Vector3(0, 0, 1));
+                            ray = new Ray(player.transform.position, new Vector3(0, 0, 1));
                             if (Physics.Raycast(ray, out hit, 0.55f)) {
                                 if (hit.collider.gameObject.name == "Wall") {
                                     break;
@@ -146,7 +148,7 @@ public class PacmanScript : MonoBehaviour {
                             }
                             player.transform.position = new Vector3(
                             (float)(System.Math.Truncate((double)player.transform.position.x * 10.0) / 10.0),
-                            player.transform.position.y, cam.z);
+                            player.transform.position.y, player.transform.position.z);
                             mode = "east";
                             queue = "none";
                         }
@@ -157,7 +159,7 @@ public class PacmanScript : MonoBehaviour {
                 switch (mode) {
                     case "east":
                         if (System.Math.Abs((int)(player.transform.position.z * 10) % 10) == 5) {
-                            ray = new Ray(cam, new Vector3(1, 0, 0));
+                            ray = new Ray(player.transform.position, new Vector3(1, 0, 0));
                             if (Physics.Raycast(ray, out hit, 0.55f)) {
                                 if (hit.collider.gameObject.name == "Wall") {
                                     break;
@@ -171,7 +173,7 @@ public class PacmanScript : MonoBehaviour {
                         break;
                     case "west":
                         if (System.Math.Abs((int)(player.transform.position.z * 10) % 10) == 5) {
-                            ray = new Ray(cam, new Vector3(-1, 0, 0));
+                            ray = new Ray(player.transform.position, new Vector3(-1, 0, 0));
                             if (Physics.Raycast(ray, out hit, 0.55f)) {
                                 if (hit.collider.gameObject.name == "Wall") {
                                     break;
@@ -185,7 +187,7 @@ public class PacmanScript : MonoBehaviour {
                         break;
                     case "north":
                         if (System.Math.Abs((int)(player.transform.position.x * 10) % 10) == 5) {
-                            ray = new Ray(cam, new Vector3(0, 0, 1));
+                            ray = new Ray(player.transform.position, new Vector3(0, 0, 1));
                             if (Physics.Raycast(ray, out hit, 0.55f)) {
                                 if (hit.collider.gameObject.name == "Wall") {
                                     break;
@@ -200,7 +202,7 @@ public class PacmanScript : MonoBehaviour {
                         break;
                     case "south":
                         if (System.Math.Abs((int)(player.transform.position.x * 10) % 10) == 5) {
-                            ray = new Ray(cam, new Vector3(0, 0, -1));
+                            ray = new Ray(player.transform.position, new Vector3(0, 0, -1));
                             if (Physics.Raycast(ray, out hit, 0.55f)) {
                                 if (hit.collider.gameObject.name == "Wall") {
                                     break;
@@ -208,7 +210,7 @@ public class PacmanScript : MonoBehaviour {
                             }
                             player.transform.position = new Vector3(
                             (float)(System.Math.Truncate((double)player.transform.position.x * 10.0) / 10.0),
-                            player.transform.position.y, cam.z);
+                            player.transform.position.y, player.transform.position.z);
                             mode = "west";
                             queue = "none";
                         }
@@ -220,7 +222,7 @@ public class PacmanScript : MonoBehaviour {
         float adj;
         switch (mode) {
             case "east":
-                ray = new Ray(cam, new Vector3(0,0,1));
+                ray = new Ray(player.transform.position, new Vector3(0,0,1));
                 if (Physics.Raycast(ray, out hit, 0.51f)) {
                     if (hit.collider.gameObject.name == "Wall") {
                         /* player.transform.position = new Vector3(player.transform.position.x, player.transform.position.y,
@@ -239,7 +241,7 @@ public class PacmanScript : MonoBehaviour {
                 player.transform.Translate(new Vector3(0,0,Time.deltaTime * speed),Space.World);
                 break;
             case "west":
-                ray = new Ray(cam, new Vector3(0, 0, -1));
+                ray = new Ray(player.transform.position, new Vector3(0, 0, -1));
                 if (Physics.Raycast(ray, out hit, 0.51f)) {
                     if (hit.collider.gameObject.name == "Wall") {
                         /*player.transform.position = new Vector3(player.transform.position.x, player.transform.position.y,
@@ -258,7 +260,7 @@ public class PacmanScript : MonoBehaviour {
                 player.transform.Translate(new Vector3(0, 0, -Time.deltaTime * speed), Space.World);
                 break;
             case "north":
-                ray = new Ray(cam, new Vector3(-1, 0, 0));
+                ray = new Ray(player.transform.position, new Vector3(-1, 0, 0));
                 if (Physics.Raycast(ray, out hit, 0.51f)) {
                     
                     if (hit.collider.gameObject.name == "Wall") {
@@ -279,7 +281,7 @@ public class PacmanScript : MonoBehaviour {
                 player.transform.Translate(new Vector3(-Time.deltaTime * speed, 0,0), Space.World);
                 break;
             case "south":
-                ray = new Ray(cam, new Vector3(1, 0, 0));
+                ray = new Ray(player.transform.position, new Vector3(1, 0, 0));
                 if (Physics.Raycast(ray, out hit, 0.51f)) {
                     if (hit.collider.gameObject.name == "Wall") {
                         /*player.transform.position = new Vector3(
