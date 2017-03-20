@@ -23,6 +23,8 @@ public class PacmanScript : MonoBehaviour {
     public GameObject keyboard;
     public Material backMat;
     public GameObject easy;
+    public AudioClip intro;
+    public GameObject home;
 
     private int points;
     private string mode;
@@ -40,9 +42,11 @@ public class PacmanScript : MonoBehaviour {
     private GameObject currDiff;
     private bool diffPress;
     private float volScale;
+    float time;
     //private Vector3 cam;
     // Use this for initialization
     void Start() {
+        time = 0;
         firstOver = false;
         pressed = false;
         pressed2 = false;
@@ -91,10 +95,14 @@ public class PacmanScript : MonoBehaviour {
                         currDiff = hit;
                         hit.GetComponent<Renderer>().material = hoverM;
                     }
-                    else if (hits[closest].transform.gameObject.name == "Slider") {
+                    else if (hits[closest].transform.gameObject.name == "Slider" && OVRInput.Get(OVRInput.Button.One, LControl)) {
                         holding = hits[closest].transform.gameObject;
                     }
-
+                    else if (hits[closest].transform.gameObject.name == "Play" && OVRInput.Get(OVRInput.Button.One, LControl) && holding == null) {
+                        state = "start";
+                        this.GetComponent<AudioSource>().PlayOneShot(intro);
+                        holding = null;
+                    }
                 }
 
                 
@@ -128,10 +136,15 @@ public class PacmanScript : MonoBehaviour {
                         currDiff = hit;
                         hit.GetComponent<Renderer>().material = hoverM;
                     }
-                    else if (hitsR[closest].transform.gameObject.name == "Slider") {
+                    else if (hitsR[closest].transform.gameObject.name == "Slider" && OVRInput.Get(OVRInput.Button.One, RControl)) {
                         holding2 = hitsR[closest].transform.gameObject;
                     }
 
+                    else if (hitsR[closest].transform.gameObject.name == "Play" && OVRInput.Get(OVRInput.Button.One, RControl) && holding2 == null) {
+                        state = "start";
+                        this.GetComponent<AudioSource>().PlayOneShot(intro);
+                        holding2 = null;
+                    }
                 }
 
                 if (holding != null && OVRInput.Get(OVRInput.Button.One, LControl)) {
@@ -183,9 +196,19 @@ public class PacmanScript : MonoBehaviour {
                 }
             }
             
-            Vector3 temp = new Vector3(6.5f, 0.5f, -0.5f);
         }
         
+        if(state == "start") {
+            player.transform.position = Vector3.MoveTowards(player.transform.position, new Vector3(6.5f, 0.5f, -0.5f), 0.1f);
+            player.transform.forward = Vector3.MoveTowards(player.transform.forward, new Vector3(0, 0, 1.0f), 0.006f);
+            time += Time.deltaTime;
+            if(time >= intro.length) {
+                state = "play";
+                this.GetComponent<AudioSource>().Play();
+                home.SetActive(false);
+            }
+        }
+
         if (state == "play") {
             if(!pacman.activeSelf) {
                 pacman.SetActive(true);
@@ -477,11 +500,15 @@ public class PacmanScript : MonoBehaviour {
             }
         }
         if (state == "win" || state == "dead") {
+            if(this.GetComponent<AudioSource>().isPlaying) {
+                this.GetComponent<AudioSource>().Stop();
+            }
+
             uiCam.enabled = false;
             if(!firstOver) {
                 firstOver = true;
                 menuTitle.text = "Game over\nScore: " + points.ToString() + "\nEnter your name";
-                pacman.SetActive(false);
+                pacman.transform.parent = null;
                 keyboard.SetActive(true);
             }
 
