@@ -23,7 +23,7 @@ public class GhostScript : MonoBehaviour {
         z = false;
         east = false;
         queue = "none";
-        state = "play";
+        state = "init";
     }
 	
 	// Update is called once per frame

@@ -21,6 +21,8 @@ public class PacmanScript : MonoBehaviour {
     public GameObject pacman;
     public TextMesh field;
     public GameObject keyboard;
+    public Material backMat;
+    public GameObject easy;
 
     private int points;
     private string mode;
@@ -33,23 +35,104 @@ public class PacmanScript : MonoBehaviour {
     private bool pressed;
     private bool pressed2;
     private bool firstOver;
+    private GameObject holding;
+    private GameObject currDiff;
+    private bool diffPress;
     //private Vector3 cam;
     // Use this for initialization
     void Start() {
         firstOver = false;
         pressed = false;
         pressed2 = false;
+        diffPress = false;
         points = 0;
-        state = "play";
+        state = "init";
         mode = "east";
         queue = "none";
         nameField = "";
+        currDiff = easy;
         // cam = player.transform.position + new Vector3(0, 0.5f, 0);
     }
 
     // Update is called once per frame
     void Update() {
+        if(state == "init") {
+            menuTitle.text = "\n\nVR Pacman";
+            Transform fingerTip;
+
+            if (lHand.transform.childCount > 0 && rHand.transform.childCount > 0) {
+                RaycastHit[] hits;
+                fingerTip = lHand.transform.GetChild(0);
+                fingerTip = fingerTip.transform.GetChild(0);
+                fingerTip = fingerTip.transform.GetChild(0);
+                fingerTip = fingerTip.transform.GetChild(2);
+                fingerTip = fingerTip.transform.GetChild(0);
+                fingerTip = fingerTip.transform.GetChild(0);
+                fingerTip = fingerTip.transform.GetChild(0);
+                hits = Physics.SphereCastAll(fingerTip.position, 0.01f, lHand.transform.forward, 0f);
+                if (hits.Length > 0) {
+                    int closest = 0;
+                    for (int i = 0; i < hits.Length; i++) {
+                        if (hits[i].distance < hits[closest].distance) {
+                            closest = i;
+                        }
+                    }
+
+                    if (hits[closest].transform.gameObject.tag == "Key") {
+                        GameObject hit = hits[closest].transform.gameObject;
+                        if(currDiff != null) {
+                            if(currDiff.name != hit.name) {
+                                currDiff.GetComponent<Renderer>().material = backMat;
+                            }
+                        }
+                        currDiff = hit;
+                        hit.GetComponent<Renderer>().material = hoverM;
+                    }
+
+                }
+
+
+                RaycastHit[] hitsR;
+                fingerTip = rHand.transform.GetChild(0);
+                fingerTip = fingerTip.transform.GetChild(0);
+                fingerTip = fingerTip.transform.GetChild(0);
+                fingerTip = fingerTip.transform.GetChild(2);
+                fingerTip = fingerTip.transform.GetChild(0);
+                fingerTip = fingerTip.transform.GetChild(0);
+                fingerTip = fingerTip.transform.GetChild(0);
+                hitsR = Physics.SphereCastAll(fingerTip.position, 0.01f, rHand.transform.forward, 0f);
+                if (hitsR.Length > 0) {
+                    int closest = 0;
+                    for (int i = 0; i < hitsR.Length; i++) {
+                        if (hitsR[i].distance < hitsR[closest].distance) {
+                            closest = i;
+                        }
+                    }
+
+                    if (hitsR[closest].transform.gameObject.tag == "Key") {
+                        GameObject hit = hitsR[closest].transform.gameObject;
+
+                        if (currDiff != null) {
+                            if (currDiff.name != hit.name) {
+                                currDiff.GetComponent<Renderer>().material = backMat;
+                            }
+                        }
+                        currDiff = hit;
+                        hit.GetComponent<Renderer>().material = hoverM;
+                    }
+
+                }
+            }
+            Vector3 temp = new Vector3(6.5f, 0.5f, -0.5f);
+        }
+        
         if (state == "play") {
+            if(!pacman.activeSelf) {
+                pacman.SetActive(true);
+            }
+            if(!uiCam.isActiveAndEnabled) {
+                uiCam.enabled = true;
+            }
             if (OVRInput.GetDown(OVRInput.Button.Two, LControl)) {
                 if (queue == "left") {
                     queue = "none";
@@ -339,39 +422,48 @@ public class PacmanScript : MonoBehaviour {
                 firstOver = true;
                 menuTitle.text = "Game over\nScore: " + points.ToString() + "\nEnter your name";
                 pacman.SetActive(false);
+                keyboard.SetActive(true);
             }
 
             player.transform.position = Vector3.MoveTowards(player.transform.position, new Vector3(-2, 33, 0), 0.2f);
             player.transform.forward = Vector3.MoveTowards(player.transform.forward, new Vector3(0, -1, 0), 0.05f);
 
-            RaycastHit[] hits;
-            Transform fingerTip;
-            fingerTip = lHand.transform.GetChild(0);
-            fingerTip = fingerTip.transform.GetChild(0);
-            fingerTip = fingerTip.transform.GetChild(0);
-            fingerTip = fingerTip.transform.GetChild(2);
-            fingerTip = fingerTip.transform.GetChild(0);
-            fingerTip = fingerTip.transform.GetChild(0);
-            fingerTip = fingerTip.transform.GetChild(0);
-            hits = Physics.SphereCastAll(fingerTip.position, 0.01f, lHand.transform.forward, 0f);
-            if (hits.Length > 0) {
-                int closest = 0;
-                for (int i = 0; i < hits.Length; i++) {
-                    if (hits[i].distance < hits[closest].distance) {
-                        closest = i;
+            if (lHand.transform.childCount > 0 && rHand.transform.childCount > 0) {
+                RaycastHit[] hits;
+                Transform fingerTip;
+                fingerTip = lHand.transform.GetChild(0);
+                fingerTip = fingerTip.transform.GetChild(0);
+                fingerTip = fingerTip.transform.GetChild(0);
+                fingerTip = fingerTip.transform.GetChild(2);
+                fingerTip = fingerTip.transform.GetChild(0);
+                fingerTip = fingerTip.transform.GetChild(0);
+                fingerTip = fingerTip.transform.GetChild(0);
+                hits = Physics.SphereCastAll(fingerTip.position, 0.01f, lHand.transform.forward, 0f);
+                if (hits.Length > 0) {
+                    int closest = 0;
+                    for (int i = 0; i < hits.Length; i++) {
+                        if (hits[i].distance < hits[closest].distance) {
+                            closest = i;
+                        }
                     }
-                }
 
-                if (hits[closest].transform.gameObject.tag == "Key") {
-                    if (hover != null && hover.name != hits[closest].transform.gameObject.name) {
-                        hover.GetComponent<Renderer>().material = notHover;
+                    if (hits[closest].transform.gameObject.tag == "Key") {
+                        if (hover != null && hover.name != hits[closest].transform.gameObject.name) {
+                            hover.GetComponent<Renderer>().material = notHover;
+                        }
+                        hover = hits[closest].transform.gameObject;
+                        hover.GetComponent<Renderer>().material = hoverM;
+                        if (!pressed) {
+                            pressed = true;
+                            KeyPressed(true);
+
+                        }
+
                     }
-                    hover = hits[closest].transform.gameObject;
-                    hover.GetComponent<Renderer>().material = hoverM;
-                    if (!pressed) {
-                        pressed = true;
-                        KeyPressed(true);
-
+                    else {
+                        if (hover != null) {
+                            hover.GetComponent<Renderer>().material = notHover;
+                        }
                     }
 
                 }
@@ -379,42 +471,42 @@ public class PacmanScript : MonoBehaviour {
                     if (hover != null) {
                         hover.GetComponent<Renderer>().material = notHover;
                     }
+                    pressed = false;
                 }
 
-            }
-            else {
-                if (hover != null) {
-                    hover.GetComponent<Renderer>().material = notHover;
-                }
-                pressed = false;
-            }
-
-            RaycastHit[] hitsR;
-            fingerTip = rHand.transform.GetChild(0);
-            fingerTip = fingerTip.transform.GetChild(0);
-            fingerTip = fingerTip.transform.GetChild(0);
-            fingerTip = fingerTip.transform.GetChild(2);
-            fingerTip = fingerTip.transform.GetChild(0);
-            fingerTip = fingerTip.transform.GetChild(0);
-            fingerTip = fingerTip.transform.GetChild(0);
-            hitsR = Physics.SphereCastAll(fingerTip.position, 0.01f, rHand.transform.forward, 0f);
-            if (hitsR.Length > 0) {
-                int closest = 0;
-                for (int i = 0; i < hitsR.Length; i++) {
-                    if (hitsR[i].distance < hitsR[closest].distance) {
-                        closest = i;
+                RaycastHit[] hitsR;
+                fingerTip = rHand.transform.GetChild(0);
+                fingerTip = fingerTip.transform.GetChild(0);
+                fingerTip = fingerTip.transform.GetChild(0);
+                fingerTip = fingerTip.transform.GetChild(2);
+                fingerTip = fingerTip.transform.GetChild(0);
+                fingerTip = fingerTip.transform.GetChild(0);
+                fingerTip = fingerTip.transform.GetChild(0);
+                hitsR = Physics.SphereCastAll(fingerTip.position, 0.01f, rHand.transform.forward, 0f);
+                if (hitsR.Length > 0) {
+                    int closest = 0;
+                    for (int i = 0; i < hitsR.Length; i++) {
+                        if (hitsR[i].distance < hitsR[closest].distance) {
+                            closest = i;
+                        }
                     }
-                }
 
-                if (hitsR[closest].transform.gameObject.tag == "Key") {
-                    if (hover2 != null && hover2.name != hitsR[closest].transform.gameObject.name) {
-                        hover2.GetComponent<Renderer>().material = notHover;
+                    if (hitsR[closest].transform.gameObject.tag == "Key") {
+                        if (hover2 != null && hover2.name != hitsR[closest].transform.gameObject.name) {
+                            hover2.GetComponent<Renderer>().material = notHover;
+                        }
+                        hover2 = hitsR[closest].transform.gameObject;
+                        hover2.GetComponent<Renderer>().material = hoverM;
+                        if (!pressed2) {
+                            pressed2 = true;
+                            KeyPressed(false);
+                        }
+
                     }
-                    hover2 = hitsR[closest].transform.gameObject;
-                    hover2.GetComponent<Renderer>().material = hoverM;
-                    if (!pressed2) {
-                        pressed2 = true;
-                        KeyPressed(false);
+                    else {
+                        if (hover2 != null) {
+                            hover2.GetComponent<Renderer>().material = notHover;
+                        }
                     }
 
                 }
@@ -422,14 +514,8 @@ public class PacmanScript : MonoBehaviour {
                     if (hover2 != null) {
                         hover2.GetComponent<Renderer>().material = notHover;
                     }
+                    pressed2 = false;
                 }
-
-            }
-            else {
-                if (hover2 != null) {
-                    hover2.GetComponent<Renderer>().material = notHover;
-                }
-                pressed2 = false;
             }
         }
         if (pellets.transform.childCount == 0 && state != "win") {
