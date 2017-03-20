@@ -14,7 +14,7 @@ public class PacmanScript : MonoBehaviour {
     public string state;
     public GameObject pellets;
     public Text pointUI;
-    public Camera uiCam;
+    public GameObject uiCam;
     public TextMesh menuTitle;
     public Material notHover;
     public Material hoverM;
@@ -25,6 +25,7 @@ public class PacmanScript : MonoBehaviour {
     public GameObject easy;
     public AudioClip intro;
     public GameObject home;
+    public GameObject ghosts;
 
     private int points;
     private string mode;
@@ -167,7 +168,7 @@ public class PacmanScript : MonoBehaviour {
                 }
 
                 if (holding2 != null && OVRInput.Get(OVRInput.Button.One, RControl)) {
-                    volScale = System.Math.Abs(-2.2f - holding.transform.position.x) / 0.35f;
+                    volScale = System.Math.Abs(-2.2f - holding2.transform.position.x) / 0.35f;
                     this.GetComponent<AudioSource>().volume = System.Math.Abs(-2.2f - holding2.transform.position.x) / 0.35f;
                     if (!this.GetComponent<AudioSource>().isPlaying) {
                         this.GetComponent<AudioSource>().Play();
@@ -206,16 +207,23 @@ public class PacmanScript : MonoBehaviour {
                 state = "play";
                 this.GetComponent<AudioSource>().Play();
                 home.SetActive(false);
+                pacman.SetActive(true);
+                uiCam.SetActive(true);
+            }
+            if(currDiff.name == "Medium") {
+                foreach(Transform child in ghosts.transform) {
+                    foreach (Transform child2 in child) {
+                        child2.gameObject.layer = LayerMask.NameToLayer("Water");
+                    }
+                }
+            }
+            if (currDiff.name == "Hard") {
+                uiCam.SetActive(false);
             }
         }
 
         if (state == "play") {
-            if(!pacman.activeSelf) {
-                pacman.SetActive(true);
-            }
-            if(!uiCam.isActiveAndEnabled) {
-                uiCam.enabled = true;
-            }
+            
             if (OVRInput.GetDown(OVRInput.Button.Two, LControl)) {
                 if (queue == "left") {
                     queue = "none";
@@ -503,8 +511,8 @@ public class PacmanScript : MonoBehaviour {
             if(this.GetComponent<AudioSource>().isPlaying) {
                 this.GetComponent<AudioSource>().Stop();
             }
-
-            uiCam.enabled = false;
+            pacman.layer = 0;
+            uiCam.SetActive(false);
             if(!firstOver) {
                 firstOver = true;
                 menuTitle.text = "Game over\nScore: " + points.ToString() + "\nEnter your name";
