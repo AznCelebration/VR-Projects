@@ -11,6 +11,8 @@ public class PacmanScript : MonoBehaviour {
     public string state;
     public GameObject pellets;
     public Text pointUI;
+    public Camera uiCam;
+    public TextMesh menuTitle;
 
     private int points;
     private string mode;
@@ -314,10 +316,12 @@ public class PacmanScript : MonoBehaviour {
             }
         }
         if(state == "win") {
+            uiCam.enabled = false;
+            menuTitle.text = "Game over\nScore: " + points.ToString() + "\nEnter your name";
             player.transform.position = Vector3.MoveTowards(player.transform.position, new Vector3(-2, 33, 0),0.2f);
             player.transform.forward = Vector3.MoveTowards(player.transform.forward, new Vector3(0, -1, 0), 0.05f);
         }
-        if(pellets.transform.childCount == 0) {
+        if(pellets.transform.childCount == 270) {
             state = "win";
         }
 
