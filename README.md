@@ -1,6 +1,4 @@
-# CSE165
-
-This repo holds various Virtual Projects projects created for CSE165. 
+# My various VR applications created for university projects
 
 Project 1: A VR game where you are surrounded by a brick wall and must use cannonballs to shoot your way out. (Oculus Rift)
 
